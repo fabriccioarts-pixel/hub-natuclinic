@@ -787,19 +787,17 @@ app.get('/api/aniversariantes/month', (req, res) => {
     }
 });
 
-// Upload via stream simples para salvar a planilha
-const uploadDir = process.env.VERCEL ? '/tmp/' : 'uploads/';
-const upload = multer({ dest: uploadDir });
+// Upload via memória para evitar qualquer problema de disco na Vercel
+const upload = multer({ storage: multer.memoryStorage() });
 
 app.post('/api/aniversariantes/upload', upload.single('csvFile'), (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'Nenhum arquivo enviado.' });
         }
-        const tempPath = req.file.path;
-        const targetPath = process.env.VERCEL ? '/tmp/aniversariantes.csv' : path.join(__dirname, 'aniversariantes.csv');
         
-        fs.renameSync(tempPath, targetPath);
+        const targetPath = process.env.VERCEL ? '/tmp/aniversariantes.csv' : path.join(__dirname, 'aniversariantes.csv');
+        fs.writeFileSync(targetPath, req.file.buffer);
         
         res.status(200).json({ success: true, message: 'Planilha atualizada com sucesso!' });
     } catch (error) {
