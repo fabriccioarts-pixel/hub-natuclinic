@@ -836,12 +836,16 @@ setInterval(async () => {
     } catch (e) {
         console.error("Erro no radar de notificações:", e.message);
     }
-}, 5 * 60 * 1000); // Iniciar Servidor (Sempre roda localmente)
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`✅ Servidor Local de Desenvolvimento Rodando!`);
-    console.log(`👉 Acesse no seu navegador: http://localhost:${PORT}\n`);
-});
+}, 5 * 60 * 1000); 
+
+// Iniciar Servidor (Sempre roda localmente, exceto na Vercel)
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+        console.log(`✅ Servidor Local de Desenvolvimento Rodando!`);
+        console.log(`👉 Acesse no seu navegador: http://localhost:${PORT}\n`);
+    });
+}
 
 // Necessário para a Vercel interpretar o Express Serverless
 export default app;
