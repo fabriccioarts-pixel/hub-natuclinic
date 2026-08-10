@@ -740,9 +740,9 @@ app.get('/api/aniversariantes', async (req, res) => {
 // Leitura da Planilha para o mês todo
 app.get('/api/aniversariantes/month', (req, res) => {
     try {
-        const csvPath = path.join(__dirname, 'aniversariantes.csv');
+        const csvPath = process.env.VERCEL ? '/tmp/aniversariantes.csv' : path.join(__dirname, 'aniversariantes.csv');
         if (!fs.existsSync(csvPath)) {
-            return res.status(200).json({ aniversariantes: [] });
+            return res.json({ aniversariantes: [] });
         }
 
         const csvText = fs.readFileSync(csvPath, 'latin1');
@@ -788,7 +788,8 @@ app.get('/api/aniversariantes/month', (req, res) => {
 });
 
 // Upload via stream simples para salvar a planilha
-const upload = multer({ dest: 'uploads/' });
+const uploadDir = process.env.VERCEL ? '/tmp/' : 'uploads/';
+const upload = multer({ dest: uploadDir });
 
 app.post('/api/aniversariantes/upload', upload.single('csvFile'), (req, res) => {
     try {
@@ -796,7 +797,7 @@ app.post('/api/aniversariantes/upload', upload.single('csvFile'), (req, res) => 
             return res.status(400).json({ error: 'Nenhum arquivo enviado.' });
         }
         const tempPath = req.file.path;
-        const targetPath = path.join(__dirname, 'aniversariantes.csv');
+        const targetPath = process.env.VERCEL ? '/tmp/aniversariantes.csv' : path.join(__dirname, 'aniversariantes.csv');
         
         fs.renameSync(tempPath, targetPath);
         
