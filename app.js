@@ -1469,14 +1469,22 @@ async function uploadNovaPlanilha(event) {
 async function performLogin() {
     const u = document.getElementById('login-username').value;
     const p = document.getElementById('login-password').value;
+    const badge = document.getElementById('login-error-badge');
+    const badgeText = document.getElementById('login-error-text');
+    
+    if (badge) badge.style.display = 'none';
+
     try {
         const res = await fetch('/api/login', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({username: u, password: p})
         });
-        const data = await res.json();
-        if (data.success) {
+        
+        let data = {};
+        try { data = await res.json(); } catch(e) {}
+        
+        if (res.ok && data.success) {
             loggedUser = data.user;
             localStorage.setItem('crm_user', JSON.stringify(loggedUser));
             document.getElementById('login-overlay').classList.remove('active');
@@ -1491,10 +1499,16 @@ async function performLogin() {
             fetchApiOptions();
             startNotificationPolling();
         } else {
-            document.getElementById('login-error').style.display = 'block';
+            if (badge) {
+                badge.style.display = 'flex';
+                badgeText.innerText = data.error || 'Erro interno de servidor. Tente novamente.';
+            }
         }
     } catch(e) {
-        alert("Erro no login");
+        if (badge) {
+            badge.style.display = 'flex';
+            badgeText.innerText = 'Falha de conexão com o servidor.';
+        }
     }
 }
 
