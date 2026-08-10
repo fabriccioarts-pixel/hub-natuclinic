@@ -251,6 +251,8 @@ function drop(ev, targetColumnId) {
 }
 
 // === AUTOCOMPLETE DE PACIENTES EXISTENTES NO AGENDAMENTO ===
+let _buscaTimer = null; // Debounce para não chamar a API a cada letra
+
 function buscarPacienteExistente(termo) {
     const dropdown = document.getElementById('ag-patient-dropdown');
     if (!dropdown) return;
@@ -260,45 +262,53 @@ function buscarPacienteExistente(termo) {
         return;
     }
 
-    const termoLower = termo.toLowerCase();
-
-    // Busca nos leads do Kanban (pacientes cadastrados localmente no CRM)
-    const doLeads = (leads || [])
-        .filter(l => l.nome && l.nome.toLowerCase().includes(termoLower))
-        .map(l => ({ nome: l.nome, telefone: l.telefone || '', fonte: 'CRM' }));
-
-    // Busca nos atendimentos atuais da agenda (pacientes do Amigo App)
-    const doAgenda = (window.currentAgendaAttendances || [])
-        .filter(a => a.patient && a.patient.name && a.patient.name.toLowerCase().includes(termoLower))
-        .map(a => ({ nome: a.patient.name, telefone: a.patient.cellphone || '', fonte: 'Agenda' }));
-
-    // Junta e remove duplicatas por nome
-    const vistos = new Set();
-    const resultados = [...doLeads, ...doAgenda].filter(r => {
-        const key = r.nome.toLowerCase();
-        if (vistos.has(key)) return false;
-        vistos.add(key);
-        return true;
-    });
-
-    if (resultados.length === 0) {
-        dropdown.style.display = 'none';
-        return;
-    }
-
-    dropdown.innerHTML = resultados.map(r => `
-        <div onclick="selecionarPaciente('${r.nome.replace(/'/g, "\\'")}', '${(r.telefone || '').replace(/'/g, "\\'")}')"
-            style="padding: 0.7rem 1rem; cursor: pointer; border-bottom: 1px solid var(--border-color); transition: background 0.15s;"
-            onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='transparent'">
-            <div style="font-weight: 600; color: var(--text-color);">${r.nome}</div>
-            <div style="font-size: 0.8rem; color: var(--text-muted);">
-                <i class="fa-solid fa-phone" style="font-size:0.7rem;"></i> ${r.telefone || 'Sem telefone'} 
-                &nbsp;<span style="background: ${r.fonte === 'CRM' ? 'rgba(99,102,241,0.2)' : 'rgba(16,185,129,0.2)'}; color: ${r.fonte === 'CRM' ? 'var(--accent-primary)' : 'var(--accent-success)'}; font-size:0.7rem; padding: 1px 5px; border-radius: 4px;">${r.fonte}</span>
-            </div>
-        </div>
-    `).join('');
-
+    // Mostra estado de carregando
+    dropdown.innerHTML = `<div style="padding:0.8rem 1rem; color:var(--text-muted); font-size:0.85rem;"><i class="fa-solid fa-spinner fa-spin"></i> Buscando pacientes...</div>`;
     dropdown.style.display = 'block';
+
+    // Debounce: aguarda 500ms após o usuário parar de digitar para chamar a API
+    clearTimeout(_buscaTimer);
+    _buscaTimer = setTimeout(async () => {
+        try {
+            const res = await fetch('/api/buscar-paciente?nome=' + encodeURIComponent(termo));
+            const data = await res.json();
+            const pacientes = data.pacientes || [];
+
+            // Também busca nos leads locais do CRM (instantâneo)
+            const termoLower = termo.toLowerCase();
+            const doLeads = (leads || [])
+                .filter(l => l.nome && l.nome.toLowerCase().includes(termoLower))
+                .map(l => ({ nome: l.nome, telefone: l.telefone || '', fonte: 'CRM' }));
+
+            // Junta resultados (Amigo App + CRM local), sem duplicatas
+            const vistos = new Set(doLeads.map(l => l.nome.toLowerCase()));
+            const doAmigo = pacientes
+                .filter(p => !vistos.has(p.nome.toLowerCase()))
+                .map(p => ({ nome: p.nome, telefone: p.telefone || '', fonte: 'Amigo App' }));
+
+            const todos = [...doLeads, ...doAmigo];
+
+            if (todos.length === 0) {
+                dropdown.innerHTML = `<div style="padding:0.8rem 1rem; color:var(--text-muted); font-size:0.85rem;"><i class="fa-solid fa-user-slash"></i> Nenhum paciente encontrado. Preencha para cadastrar.</div>`;
+                return;
+            }
+
+            dropdown.innerHTML = todos.map(r => `
+                <div onclick="selecionarPaciente('${r.nome.replace(/'/g, "\\'")}', '${(r.telefone || '').replace(/'/g, "\\'")}')"
+                    style="padding: 0.7rem 1rem; cursor: pointer; border-bottom: 1px solid var(--border-color); transition: background 0.15s;"
+                    onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                    <div style="font-weight: 600; color: var(--text-color);">${r.nome}</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">
+                        <i class="fa-solid fa-phone" style="font-size:0.7rem;"></i> ${r.telefone || 'Sem telefone'} 
+                        &nbsp;<span style="background: ${r.fonte === 'CRM' ? 'rgba(99,102,241,0.2)' : 'rgba(251,146,60,0.2)'}; color: ${r.fonte === 'CRM' ? 'var(--accent-primary)' : '#fb923c'}; font-size:0.7rem; padding: 1px 6px; border-radius: 4px;">${r.fonte}</span>
+                    </div>
+                </div>
+            `).join('');
+
+        } catch(e) {
+            dropdown.innerHTML = `<div style="padding:0.8rem 1rem; color:var(--accent-danger); font-size:0.85rem;"><i class="fa-solid fa-triangle-exclamation"></i> Erro ao buscar. Tente novamente.</div>`;
+        }
+    }, 500);
 }
 
 function selecionarPaciente(nome, telefone) {

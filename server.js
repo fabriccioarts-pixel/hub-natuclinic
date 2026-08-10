@@ -78,6 +78,71 @@ async function queryD1(sql, params = []) {
     return data.result[0].results || [];
 }
 
+// ==========================================
+// BUSCA DE PACIENTES POR NOME (Ao Vivo)
+// ==========================================
+
+app.get('/api/buscar-paciente', async (req, res) => {
+    const { nome } = req.query;
+    if (!nome || nome.trim().length < 2) {
+        return res.json({ pacientes: [] });
+    }
+
+    const AMIGO_API_TOKEN = process.env.AMIGO_API_TOKEN;
+    if (!AMIGO_API_TOKEN) return res.status(500).json({ error: 'Token não configurado' });
+
+    const headers = { 'Authorization': `Bearer ${AMIGO_API_TOKEN}` };
+    const nomeLower = nome.trim().toLowerCase();
+
+    // Monta as janelas de busca: últimos 6 meses em blocos de 30 dias (em paralelo)
+    const hoje = new Date();
+    const janelas = [];
+    for (let i = 0; i < 6; i++) {
+        const fim = new Date(hoje);
+        fim.setMonth(hoje.getMonth() - i);
+        const inicio = new Date(fim);
+        inicio.setDate(1);
+        janelas.push({
+            start: inicio.toISOString().split('T')[0],
+            end: fim.toISOString().split('T')[0]
+        });
+    }
+
+    try {
+        // Busca todos os meses em paralelo para ser rápido
+        const respostas = await Promise.all(
+            janelas.map(j =>
+                fetch(`https://amigobot-api.amigoapp.com.br/attendances?start_date=${j.start}&end_date=${j.end}&status=ALL`, { headers })
+                    .then(r => r.json())
+                    .catch(() => ({ data: [] }))
+            )
+        );
+
+        // Extrai e filtra pacientes pelo nome pesquisado
+        const vistos = new Set();
+        const pacientes = [];
+
+        for (const resp of respostas) {
+            for (const att of (resp.data || [])) {
+                if (!att.patient || !att.patient.name) continue;
+                const id = att.patient.id;
+                if (vistos.has(id)) continue;
+                if (!att.patient.name.toLowerCase().includes(nomeLower)) continue;
+                vistos.add(id);
+                pacientes.push({
+                    id: att.patient.id,
+                    nome: att.patient.name,
+                    telefone: att.patient.cellphone || att.patient.contact_cellphone || ''
+                });
+            }
+        }
+
+        res.json({ pacientes });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // Inicializar Tabelas
 app.post('/api/init-db', async (req, res) => {
     try {
