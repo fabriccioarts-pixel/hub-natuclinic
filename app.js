@@ -250,6 +250,76 @@ function drop(ev, targetColumnId) {
     }
 }
 
+// === AUTOCOMPLETE DE PACIENTES EXISTENTES NO AGENDAMENTO ===
+function buscarPacienteExistente(termo) {
+    const dropdown = document.getElementById('ag-patient-dropdown');
+    if (!dropdown) return;
+
+    if (!termo || termo.length < 2) {
+        dropdown.style.display = 'none';
+        return;
+    }
+
+    const termoLower = termo.toLowerCase();
+
+    // Busca nos leads do Kanban (pacientes cadastrados localmente no CRM)
+    const doLeads = (leads || [])
+        .filter(l => l.nome && l.nome.toLowerCase().includes(termoLower))
+        .map(l => ({ nome: l.nome, telefone: l.telefone || '', fonte: 'CRM' }));
+
+    // Busca nos atendimentos atuais da agenda (pacientes do Amigo App)
+    const doAgenda = (window.currentAgendaAttendances || [])
+        .filter(a => a.patient && a.patient.name && a.patient.name.toLowerCase().includes(termoLower))
+        .map(a => ({ nome: a.patient.name, telefone: a.patient.cellphone || '', fonte: 'Agenda' }));
+
+    // Junta e remove duplicatas por nome
+    const vistos = new Set();
+    const resultados = [...doLeads, ...doAgenda].filter(r => {
+        const key = r.nome.toLowerCase();
+        if (vistos.has(key)) return false;
+        vistos.add(key);
+        return true;
+    });
+
+    if (resultados.length === 0) {
+        dropdown.style.display = 'none';
+        return;
+    }
+
+    dropdown.innerHTML = resultados.map(r => `
+        <div onclick="selecionarPaciente('${r.nome.replace(/'/g, "\\'")}', '${(r.telefone || '').replace(/'/g, "\\'")}')"
+            style="padding: 0.7rem 1rem; cursor: pointer; border-bottom: 1px solid var(--border-color); transition: background 0.15s;"
+            onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='transparent'">
+            <div style="font-weight: 600; color: var(--text-color);">${r.nome}</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">
+                <i class="fa-solid fa-phone" style="font-size:0.7rem;"></i> ${r.telefone || 'Sem telefone'} 
+                &nbsp;<span style="background: ${r.fonte === 'CRM' ? 'rgba(99,102,241,0.2)' : 'rgba(16,185,129,0.2)'}; color: ${r.fonte === 'CRM' ? 'var(--accent-primary)' : 'var(--accent-success)'}; font-size:0.7rem; padding: 1px 5px; border-radius: 4px;">${r.fonte}</span>
+            </div>
+        </div>
+    `).join('');
+
+    dropdown.style.display = 'block';
+}
+
+function selecionarPaciente(nome, telefone) {
+    const nameInput = document.getElementById('ag-patient-name');
+    const phoneInput = document.getElementById('ag-patient-phone');
+    const dropdown = document.getElementById('ag-patient-dropdown');
+
+    if (nameInput) nameInput.value = nome;
+    if (phoneInput) phoneInput.value = telefone;
+    if (dropdown) dropdown.style.display = 'none';
+}
+
+// Fecha o dropdown ao clicar fora
+document.addEventListener('click', (e) => {
+    const dd = document.getElementById('ag-patient-dropdown');
+    const input = document.getElementById('ag-patient-name');
+    if (dd && input && !dd.contains(e.target) && e.target !== input) {
+        dd.style.display = 'none';
+    }
+});
+
 // === MODAIS ===
 function openNewLeadModal() {
     document.getElementById('modalNewLead').classList.add('active');

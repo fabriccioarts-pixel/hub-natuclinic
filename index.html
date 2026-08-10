@@ -235,15 +235,21 @@
             <form id="form-agendar">
                 <input type="hidden" id="ag-lead-id"> <!-- Campos extras para agendamento direto pela grade -->
                 <div id="directScheduleFields" style="display: none;">
-                    <div class="form-group">
+                    <div class="form-group" style="position: relative;">
                         <label>Nome do Paciente</label>
-                        <input type="text" id="ag-patient-name" class="form-control" placeholder="Ex: João da Silva">
+                        <input type="text" id="ag-patient-name" class="form-control" 
+                            placeholder="Digite o nome para buscar ou cadastrar novo..."
+                            oninput="buscarPacienteExistente(this.value)" autocomplete="off">
+                        <div id="ag-patient-dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--bg-card); border:1px solid var(--border-color); border-radius:8px; z-index:1001; max-height:200px; overflow-y:auto; box-shadow:0 8px 24px rgba(0,0,0,0.4);">
+                            <!-- Sugestões de pacientes existentes injetadas via JS -->
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Telefone (WhatsApp)</label>
                         <input type="text" id="ag-patient-phone" class="form-control" placeholder="(61) 99999-9999">
                     </div>
                 </div>
+
 
                 <div class="form-group">
                     <label>Local (Clínica)</label>
