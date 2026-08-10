@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Comercial - Histórico Financeiro</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="style.css?v=3">
+    <style>
+        .table-container {
+            padding: 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-card);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .data-table th, .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-main);
+            font-size: 0.9rem;
+        }
+        .data-table th {
+            background: rgba(0,0,0,0.2);
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+        .data-table tbody tr:hover {
+            background: rgba(255,255,255,0.02);
+        }
+        .badge-status {
+            padding: 0.25rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .status-pago { background: var(--accent-success); color: white; }
+        .status-pendente { background: var(--accent-danger); color: white; }
+        .status-50 { background: var(--accent-warning); color: black; }
+    </style>
+</head>
+<body>
+    <!-- LOGIN OVERLAY -->
+    <div id="login-overlay" class="modal-overlay active" style="z-index: 9999; background: var(--bg-color); display: flex; align-items: center; justify-content: center;">
+        <div class="modal" style="max-width: 400px; text-align: center;">
+            <h2 style="margin-bottom: 1rem;"><i class="fa-solid fa-lock"></i> Acesso Restrito</h2>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Faça login para acessar o CRM</p>
+            
+            <div class="form-group" style="text-align: left;">
+                <label>Usuário</label>
+                <input type="text" id="login-username" placeholder="ex: carol" />
+            </div>
+            <div class="form-group" style="text-align: left;">
+                <label>Senha</label>
+                <input type="password" id="login-password" placeholder="***" />
+            </div>
+            
+            <button class="btn-primary" onclick="performLogin()" style="width: 100%; justify-content: center; margin-top: 1rem;">
+                Entrar
+            </button>
+            <p id="login-error" style="color: var(--accent-danger); margin-top: 1rem; display: none;">Usuário ou senha inválidos.</p>
+        </div>
+    </div>
+
+    <header>
+        <div class="logo">
+            <h1><i class="fa-solid fa-users-rays"></i></h1>
+        </div>
+        
+        <div class="tabs-container">
+            <button class="tab-btn" onclick="switchTab('kanban')" id="tab-kanban">
+                <i class="fa-solid fa-table-columns"></i> CRM Vendas
+            </button>
+            <button class="tab-btn" onclick="switchTab('agenda')" id="tab-agenda">
+                <i class="fa-regular fa-calendar-days"></i> Agenda Completa
+            </button>
+            
+            <div class="dropdown">
+                <button class="tab-btn" id="tab-relacionamento-main">
+                    <i class="fa-solid fa-heart" style="color: var(--accent-success)"></i> Relacionamento <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem; margin-left: 0.3rem; opacity: 0.7;"></i>
+                </button>
+                <div class="dropdown-content">
+                    <button class="tab-btn" onclick="switchTab('posvenda')" id="tab-posvenda">
+                        <i class="fa-solid fa-star" style="color: var(--accent-warning)"></i> Pós-Venda
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('faltantes')" id="tab-faltantes">
+                        <i class="fa-solid fa-user-xmark" style="color: var(--accent-danger)"></i> Faltantes
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('sumidos')" id="tab-sumidos">
+                        <i class="fa-solid fa-user-clock" style="color: var(--accent-danger)"></i> Sumidos
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('aniversariantes')" id="tab-aniversariantes">
+                        <i class="fa-solid fa-cake-candles" style="color: var(--accent-primary)"></i> Aniversariantes
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions" style="display: flex; gap: 1rem; align-items: center;">
+            <button id="btn-gestao-acessos" class="btn-secondary" onclick="openUsuariosModal()" title="Gestão de Acessos" style="display: none; align-items: center; gap: 0.5rem; background: var(--accent-warning); color: #000; border: none; font-weight: 500;">
+                <i class="fa-solid fa-lock"></i> Gestão de Acessos
+            </button>
+            <button class="btn-secondary active" onclick="switchTab('historico')" title="Visualizar Histórico Web" style="display: flex; align-items: center; gap: 0.5rem; background: var(--accent-primary); color: white; border: none; font-weight: 500; border: 2px solid white;">
+                <i class="fa-solid fa-list"></i> Histórico Web
+            </button>
+            <button class="btn-secondary" onclick="exportarCSVFinanceiro()" title="Baixar Planilha Financeira" style="display: flex; align-items: center; gap: 0.5rem; background: var(--accent-success); color: white; border: none; font-weight: 500;">
+                <i class="fa-solid fa-file-csv"></i> Baixar Planilha
+            </button>
+            <div class="dropdown" style="position: relative;">
+                <div style="position: relative; cursor: pointer;" onclick="toggleNotificationsMenu()">
+                    <button class="btn-secondary" title="Atendimentos Finalizados" style="padding: 0.5rem; width: 40px; height: 40px; justify-content: center; background: transparent; border: none;">
+                        <i class="fa-solid fa-bell" style="font-size: 1.2rem; color: #ffffff;"></i>
+                    </button>
+                    <span id="nav-notification-badge" style="display: none; position: absolute; top: 0; right: 0; background: var(--accent-danger); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; font-weight: bold; align-items: center; justify-content: center;">0</span>
+                </div>
+                <!-- Menu expansível -->
+                <div id="notifications-dropdown" class="dropdown-content" style="display: none; position: absolute; left: auto; right: 0; transform: translateX(-10px); top: 120%; width: 320px; max-height: 400px; overflow-y: auto; padding: 0.5rem; border-radius: 8px; background: var(--bg-card); color: var(--text-main); box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 9999; border: 1px solid var(--border-color);">
+                    <div style="padding: 0.5rem; font-weight: bold; border-bottom: 1px solid var(--border-color); margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-main);">Notificações</span>
+                        <div>
+                            <i class="fa-solid fa-check-double" style="cursor: pointer; color: var(--text-muted); margin-right: 0.75rem;" title="Marcar tudo como lido" onclick="clearNotificationsBadge()"></i>
+                            <i class="fa-solid fa-trash-can" style="cursor: pointer; color: var(--accent-danger);" title="Limpar todas as notificações" onclick="clearAllNotifications()"></i>
+                        </div>
+                    </div>
+                    <div id="notifications-list" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <div style="padding: 1rem; text-align: center; color: var(--text-muted); font-size: 0.85rem;">Nenhuma notificação ainda.</div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn-secondary" id="theme-toggle" onclick="toggleTheme()" title="Mudar Tema" style="padding: 0.5rem; width: 40px; height: 40px; justify-content: center;">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+            <button class="btn-danger" onclick="logout()" title="Sair do Sistema" style="padding: 0.5rem 1rem; border-radius: 4px; border: none; font-weight: 500; background: var(--accent-danger); color: white; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                <i class="fa-solid fa-right-from-bracket"></i> Sair
+            </button>
+        </div>
+    </header>
+
+    <div class="table-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h2><i class="fa-solid fa-list-check" style="color: var(--accent-primary); margin-right: 0.5rem;"></i> Histórico de Agendamentos</h2>
+            <button class="btn-secondary" onclick="carregarHistorico()" title="Atualizar">
+                <i class="fa-solid fa-rotate-right"></i> Atualizar
+            </button>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;">
+            <div class="form-group" style="margin: 0; flex: 1; min-width: 140px;">
+                <label style="font-size: 0.8rem;">Data Agendada</label>
+                <input type="date" id="filtro-data" class="form-control" onchange="aplicarFiltros()">
+            </div>
+            <div class="form-group" style="margin: 0; flex: 1; min-width: 140px;">
+                <label style="font-size: 0.8rem;">Quem Agendou</label>
+                <select id="filtro-agendado" class="form-control" onchange="aplicarFiltros()">
+                    <option value="">Todos</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin: 0; flex: 1; min-width: 140px;">
+                <label style="font-size: 0.8rem;">Origem</label>
+                <select id="filtro-origem" class="form-control" onchange="aplicarFiltros()">
+                    <option value="">Todas</option>
+                    <option value="Orgânico">Orgânico</option>
+                    <option value="Tráfego">Tráfego</option>
+                    <option value="Indicação">Indicação</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin: 0; flex: 1; min-width: 140px;">
+                <label style="font-size: 0.8rem;">Unidade</label>
+                <select id="filtro-unidade" class="form-control" onchange="aplicarFiltros()">
+                    <option value="">Todas</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin: 0; flex: 1; min-width: 150px;">
+                <label style="font-size: 0.8rem;">Procedimento</label>
+                <input type="text" id="filtro-procedimento" class="form-control" placeholder="Buscar..." oninput="aplicarFiltros()">
+            </div>
+            <div class="form-group" style="margin: 0; flex: 1; min-width: 160px;">
+                <label style="font-size: 0.8rem;">Ordenar Valor</label>
+                <select id="ordem-valor" class="form-control" onchange="aplicarFiltros()">
+                    <option value="">Padrão (Mais Recente)</option>
+                    <option value="desc">Maior para Menor</option>
+                    <option value="asc">Menor para Maior</option>
+                </select>
+            </div>
+            <button class="btn-secondary" onclick="limparFiltros()" style="height: 38px; padding: 0 1rem;" title="Limpar Filtros">
+                <i class="fa-solid fa-eraser"></i>
+            </button>
+        </div>
+
+        
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Data Agendada</th>
+                    <th>Nome do Paciente</th>
+                    <th>Procedimento</th>
+                    <th>Unidade</th>
+                    <th>Origem</th>
+                    <th>Valor Primário</th>
+                    <th>Valor Secundário</th>
+                    <th>Status Pagamento</th>
+                    <th>Agendado Por</th>
+                </tr>
+            </thead>
+            <tbody id="historico-tbody">
+                <tr><td colspan="9" style="text-align: center;"><i class="fa-solid fa-spinner spin"></i> Carregando dados...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal Gestão de Usuários (necessário para a função de gestão de acessos no header) -->
+    <div class="modal-overlay" id="modalUsuarios">
+        <div class="modal" style="max-width: 600px; width: 90%;">
+            <h2><i class="fa-solid fa-users-gear" style="color: var(--accent-warning)"></i> Gestão de Acessos</h2>
+            
+            <div style="background: var(--bg-column); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid var(--border-color);">
+                <h3 style="font-size: 1rem; margin-bottom: 1rem; color: var(--text-main);">Criar Novo Acesso</h3>
+                <div style="display: flex; gap: 1rem; align-items: flex-end;">
+                    <div class="form-group" style="flex: 1; margin: 0;">
+                        <label>Usuário</label>
+                        <input type="text" id="nu-user" class="form-control" placeholder="Login">
+                    </div>
+                    <div class="form-group" style="flex: 1; margin: 0;">
+                        <label>Senha</label>
+                        <input type="password" id="nu-pass" class="form-control" placeholder="Senha">
+                    </div>
+                    <div class="form-group" style="flex: 1; margin: 0;">
+                        <label>Cargo</label>
+                        <select id="nu-role" class="form-control">
+                            <option value="user">Comum (user)</option>
+                            <option value="admin">Administrador (admin)</option>
+                        </select>
+                    </div>
+                    <button class="btn-save" onclick="createUser()" style="height: 38px;">Criar</button>
+                </div>
+            </div>
+
+            <h3 style="font-size: 1rem; margin-bottom: 1rem; color: var(--text-main);">Acessos Atuais</h3>
+            <div style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
+                <table style="width: 100%; text-align: left; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: rgba(0,0,0,0.1); border-bottom: 1px solid var(--border-color);">
+                            <th style="padding: 0.75rem 1rem; font-size: 0.85rem; color: var(--text-muted);">Usuário</th>
+                            <th style="padding: 0.75rem 1rem; font-size: 0.85rem; color: var(--text-muted);">Cargo</th>
+                            <th style="padding: 0.75rem 1rem; font-size: 0.85rem; color: var(--text-muted); text-align: right;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usuarios-tbody">
+                        <!-- Renderizado via JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="modal-actions" style="margin-top: 1.5rem;">
+                <button class="btn-cancel" onclick="document.getElementById('modalUsuarios').classList.remove('active')">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts compartilhados -->
+    <script src="app.js"></script>
+    
+    <!-- Script específico desta página -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (loggedUser) {
+                carregarHistorico();
+            } else {
+                // Se não estiver logado, o login-overlay aparece por causa do CSS default ativo.
+                // Mas quando logar (performLogin() no app.js), a gente precisa carregar os dados.
+                // Como performLogin não sabe do carregarHistorico(), usamos um pequeno truque:
+                const originalPerformLogin = window.performLogin;
+                window.performLogin = async function() {
+                    await originalPerformLogin();
+                    if(loggedUser) carregarHistorico();
+                };
+            }
+        });
+
+        window.historicoData = [];
+
+        async function carregarHistorico() {
+            const tbody = document.getElementById('historico-tbody');
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;"><i class="fa-solid fa-spinner spin"></i> Carregando dados...</td></tr>';
+            
+            try {
+                const res = await fetch('/api/historico-financeiro');
+                window.historicoData = await res.json();
+                
+                // Popular opções dinâmicas dos selects (Quem Agendou, Unidade)
+                popularFiltrosDinamicos();
+                
+                // Renderizar a tabela inicial (sem filtros aplicados)
+                aplicarFiltros();
+            } catch (error) {
+                console.error(error);
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--accent-danger);">Erro ao carregar dados.</td></tr>';
+            }
+        }
+
+        function popularFiltrosDinamicos() {
+            const agendados = [...new Set(window.historicoData.map(d => d.agendado_por || 'Sistema'))].filter(Boolean);
+            const selAgendado = document.getElementById('filtro-agendado');
+            selAgendado.innerHTML = '<option value="">Todos</option>';
+            agendados.forEach(a => selAgendado.innerHTML += `<option value="${a}">${a}</option>`);
+
+            const unidades = [...new Set(window.historicoData.map(d => d.unidade))].filter(Boolean);
+            const selUnidade = document.getElementById('filtro-unidade');
+            selUnidade.innerHTML = '<option value="">Todas</option>';
+            unidades.forEach(u => selUnidade.innerHTML += `<option value="${u}">${u}</option>`);
+        }
+
+        function aplicarFiltros() {
+            const fData = document.getElementById('filtro-data').value;
+            const fAgendado = document.getElementById('filtro-agendado').value;
+            const fOrigem = document.getElementById('filtro-origem').value;
+            const fUnidade = document.getElementById('filtro-unidade').value;
+            const fProcedimento = document.getElementById('filtro-procedimento').value.toLowerCase();
+            const fOrdem = document.getElementById('ordem-valor').value;
+
+            let filtrados = window.historicoData.filter(row => {
+                // Filtro de Data (YYYY-MM-DD)
+                if (fData && row.data_agendamento !== fData) return false;
+                
+                // Filtro Quem Agendou
+                const ag = row.agendado_por || 'Sistema';
+                if (fAgendado && ag !== fAgendado) return false;
+
+                // Filtro Origem
+                if (fOrigem && row.origem !== fOrigem) return false;
+
+                // Filtro Unidade
+                if (fUnidade && row.unidade !== fUnidade) return false;
+
+                // Filtro Procedimento (Busca por texto livre)
+                if (fProcedimento && !(row.procedimento || '').toLowerCase().includes(fProcedimento)) return false;
+
+                return true;
+            });
+
+            // Ordenação por Valor Primário
+            if (fOrdem === 'desc') {
+                filtrados.sort((a, b) => (parseFloat(b.valor_primario) || 0) - (parseFloat(a.valor_primario) || 0));
+            } else if (fOrdem === 'asc') {
+                filtrados.sort((a, b) => (parseFloat(a.valor_primario) || 0) - (parseFloat(b.valor_primario) || 0));
+            }
+
+            renderTabelaHistorico(filtrados);
+        }
+
+        function limparFiltros() {
+            document.getElementById('filtro-data').value = '';
+            document.getElementById('filtro-agendado').value = '';
+            document.getElementById('filtro-origem').value = '';
+            document.getElementById('filtro-unidade').value = '';
+            document.getElementById('filtro-procedimento').value = '';
+            document.getElementById('ordem-valor').value = '';
+            aplicarFiltros();
+        }
+
+        function renderTabelaHistorico(dataToRender) {
+            const tbody = document.getElementById('historico-tbody');
+            tbody.innerHTML = '';
+            
+            if(!dataToRender || dataToRender.length === 0) {
+                let emptyRows = '';
+                for(let i=0; i<15; i++) {
+                    emptyRows += `<tr>
+                        <td style="color: var(--text-muted); opacity: 0.3;">--/--/----</td>
+                        <td style="color: var(--text-muted); opacity: 0.3;">-</td>
+                        <td style="color: var(--text-muted); opacity: 0.3;">-</td>
+                        <td style="color: var(--text-muted); opacity: 0.3;">-</td>
+                        <td style="color: var(--text-muted); opacity: 0.3;">-</td>
+                        <td style="color: var(--text-muted); opacity: 0.3;">R$ 0.00</td>
+                        <td style="color: var(--text-muted); opacity: 0.3;">R$ 0.00</td>
+                        <td><span class="badge-status" style="background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.3);">-</span></td>
+                        <td style="color: var(--text-muted); opacity: 0.3;">-</td>
+                    </tr>`;
+                }
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); background: rgba(255,255,255,0.02); padding: 1.5rem;">Nenhum agendamento encontrado para os filtros selecionados.</td></tr>` + emptyRows;
+                return;
+            }
+            
+            dataToRender.forEach(row => {
+                const tr = document.createElement('tr');
+                
+                let statusClass = '';
+                let statusText = row.status_pagamento || 'Pendente';
+                if (statusText === 'Pago') statusClass = 'status-pago';
+                else if (statusText === 'Pendente') statusClass = 'status-pendente';
+                else if (statusText === '50%') statusClass = 'status-50';
+                
+                const dParts = (row.data_agendamento || '').split('-');
+                const dataFormatada = dParts.length === 3 ? `${dParts[2]}/${dParts[1]}/${dParts[0]}` : row.data_agendamento;
+
+                tr.innerHTML = `
+                    <td style="font-weight: 500;">${dataFormatada}</td>
+                    <td style="font-weight: 600; color: var(--accent-primary);">${row.nome_paciente || ''}</td>
+                    <td>${row.procedimento || ''}</td>
+                    <td>${row.unidade || ''}</td>
+                    <td>${row.origem || ''}</td>
+                    <td style="color: var(--accent-success); font-weight: 500;">${row.valor_primario ? 'R$ '+row.valor_primario : '-'}</td>
+                    <td style="color: var(--accent-success); font-weight: 500;">${row.valor_secundario ? 'R$ '+row.valor_secundario : '-'}</td>
+                    <td><span class="badge-status ${statusClass}">${statusText}</span></td>
+                    <td><span style="background: rgba(255,255,255,0.1); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">${row.agendado_por || 'Sistema'}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+</html>

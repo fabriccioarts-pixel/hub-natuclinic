@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Comercial - Clínica</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js for Dashboard -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <h1><i class="fa-solid fa-users-rays"></i> CRM Amigo App</h1>
+        </div>
+        
+        <div class="tabs-container">
+            <button class="tab-btn" onclick="window.location.href='index.html'" id="tab-kanban">
+                <i class="fa-solid fa-table-columns"></i> CRM Vendas
+            </button>
+            <button class="tab-btn" onclick="window.location.href='agenda.html'" id="tab-agenda">
+                <i class="fa-regular fa-calendar-days"></i> Agenda Completa
+            </button>
+            <button class="tab-btn" onclick="window.location.href='dashboard.html'" id="tab-dashboard" style="background: rgba(99, 102, 241, 0.1); color: var(--accent-primary); border-color: rgba(99, 102, 241, 0.3);">
+                <i class="fa-solid fa-chart-pie"></i> Dashboard VIP
+            </button>
+            
+            <div class="dropdown">
+                <button class="tab-btn" id="tab-relacionamento-main">
+                    <i class="fa-solid fa-heart" style="color: var(--accent-success)"></i> Relacionamento <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem; margin-left: 0.3rem; opacity: 0.7;"></i>
+                </button>
+                <div class="dropdown-content">
+                    <button class="tab-btn" onclick="window.location.href='posvenda.html'" id="tab-posvenda">
+                        <i class="fa-solid fa-star" style="color: var(--accent-warning)"></i> P�s-Venda
+                    </button>
+                    <button class="tab-btn" onclick="window.location.href='faltantes.html'" id="tab-faltantes">
+                        <i class="fa-solid fa-user-xmark" style="color: var(--accent-danger)"></i> Faltantes
+                    </button>
+                    <button class="tab-btn" onclick="window.location.href='sumidos.html'" id="tab-sumidos">
+                        <i class="fa-solid fa-user-clock" style="color: var(--accent-danger)"></i> Sumidos
+                    </button>
+                    <button class="tab-btn" onclick="window.location.href='aniversariantes.html'" id="tab-aniversariantes">
+                        <i class="fa-solid fa-cake-candles" style="color: var(--accent-primary)"></i> Aniversariantes
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions" style="display: flex; gap: 1rem; align-items: center;">
+            <button class="btn-secondary" id="theme-toggle" onclick="toggleTheme()" title="Mudar Tema" style="padding: 0.5rem; width: 40px; height: 40px; justify-content: center;">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+            <button class="btn-primary" onclick="openNewLeadModal()">
+                <i class="fa-solid fa-plus"></i> Novo Paciente
+            </button>
+        </div>
+    </header>
+
+    <!-- ABA: ANIVERSARIANTES -->
+    <main class="relacionamento" id="view-aniversariantes" style="display: flex; padding: 2rem; flex-grow: 1; flex-direction: column; gap: 2rem;">
+        
+        <!-- BLOCO 1: HOJE (API AO VIVO) -->
+        <div style="background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 8px; padding: 1.5rem;">
+            <div style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h2 style="font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem; color: var(--accent-warning);">
+                        <i class="fa-solid fa-cake-candles"></i> Aniversariantes de Hoje 
+                        <span id="count-aniversariantes-hoje" style="background: var(--accent-warning); color: #000; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 1rem; margin-left: 0.5rem;">0</span>
+                    </h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem;">Lista ao vivo, sincronizada diretamente com a API oficial do Amigo App.</p>
+                </div>
+            </div>
+
+            <div class="table-container" style="background: transparent;">
+                <table class="crm-table">
+                    <thead>
+                        <tr>
+                            <th>Paciente</th>
+                            <th>Celular</th>
+                            <th>Idade Alcançada</th>
+                            <th style="width: 220px; text-align: center;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="list-aniversariantes-hoje">
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                                <i class="fa-solid fa-circle-notch spin"></i> Consultando a API...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- BLOCO 2: MÊS (PLANILHA) -->
+        <div style="border-top: 1px solid var(--border-color); padding-top: 2rem;">
+            <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h2 style="font-size: 1.3rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-calendar-days" style="color: var(--accent-primary)"></i> Aniversariantes do Mês
+                        <span id="count-aniversariantes-mes" style="background: rgba(255,255,255,0.1); padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.9rem; margin-left: 0.5rem;">0</span>
+                    </h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem;">Lendo automaticamente da sua planilha salva (aniversariantes.csv).</p>
+                </div>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <label for="csvUpdateInput" class="btn-secondary" style="cursor: pointer; padding: 0.5rem 1rem; border: 1px solid var(--border-color); border-radius: 6px; display: inline-flex; align-items: center; gap: 0.5rem; background: transparent;">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Atualizar Planilha
+                    </label>
+                    <input type="file" id="csvUpdateInput" accept=".csv" style="display: none;" onchange="uploadNovaPlanilha(event)">
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="crm-table">
+                    <thead>
+                        <tr>
+                            <th>Paciente</th>
+                            <th>Celular</th>
+                            <th>Data de Nascimento</th>
+                            <th style="width: 220px; text-align: center;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="list-aniversariantes-mes">
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 3rem;">
+                                <i class="fa-solid fa-circle-notch spin"></i> Lendo arquivo local...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Comercial - Clínica</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js for Dashboard -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <h1><i class="fa-solid fa-users-rays"></i> CRM Amigo App</h1>
+        </div>
+        
+        <div class="tabs-container">
+            <button class="tab-btn active" onclick="switchTab('kanban')" id="tab-kanban">
+                <i class="fa-solid fa-table-columns"></i> CRM Vendas
+            </button>
+            <button class="tab-btn" onclick="switchTab('agenda')" id="tab-agenda">
+                <i class="fa-regular fa-calendar-days"></i> Agenda Completa
+            </button>
+            <button class="tab-btn" onclick="switchTab('dashboard')" id="tab-dashboard" style="background: rgba(99, 102, 241, 0.1); color: var(--accent-primary); border-color: rgba(99, 102, 241, 0.3);">
+                <i class="fa-solid fa-chart-pie"></i> Dashboard VIP
+            </button>
+            
+            <div class="dropdown">
+                <button class="tab-btn" id="tab-relacionamento-main">
+                    <i class="fa-solid fa-heart" style="color: var(--accent-success)"></i> Relacionamento <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem; margin-left: 0.3rem; opacity: 0.7;"></i>
+                </button>
+                <div class="dropdown-content">
+                    <button class="tab-btn" onclick="switchTab('posvenda')" id="tab-posvenda">
+                        <i class="fa-solid fa-star" style="color: var(--accent-warning)"></i> Pós-Venda
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('faltantes')" id="tab-faltantes">
+                        <i class="fa-solid fa-user-xmark" style="color: var(--accent-danger)"></i> Faltantes
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('sumidos')" id="tab-sumidos">
+                        <i class="fa-solid fa-user-clock" style="color: var(--accent-danger)"></i> Sumidos
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('aniversariantes')" id="tab-aniversariantes">
+                        <i class="fa-solid fa-cake-candles" style="color: var(--accent-primary)"></i> Aniversariantes
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions" style="display: flex; gap: 1rem; align-items: center;">
+            <button class="btn-secondary" id="theme-toggle" onclick="toggleTheme()" title="Mudar Tema" style="padding: 0.5rem; width: 40px; height: 40px; justify-content: center;">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+            <button class="btn-primary" onclick="openNewLeadModal()">
+                <i class="fa-solid fa-plus"></i> Novo Paciente
+            </button>
+        </div>
+    </header>
+
+    <!-- ABA: DASHBOARD -->
+    <main class="relacionamento" id="view-dashboard" style="display: none; padding: 2rem; flex-grow: 1; flex-direction: column; gap: 2rem; background: var(--bg-color);">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h2 style="font-size: 1.8rem; display: flex; align-items: center; gap: 0.5rem; color: var(--text-color);">
+                    <i class="fa-solid fa-chart-pie" style="color: var(--accent-primary)"></i> Painel Executivo
+                </h2>
+                <p style="color: var(--text-muted); font-size: 1rem; margin-top: 0.2rem;">Visão geral de faturamento, vendas e engajamento</p>
+            </div>
+            <button class="btn-primary" onclick="fetchDashboardData()" style="padding: 0.6rem 1.5rem;">
+                <i class="fa-solid fa-rotate-right"></i> Atualizar Dados
+            </button>
+        </div>
+
+        <!-- 4 CARDS NO TOPO -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem;">
+            <!-- Faturamento -->
+            <div class="dash-card">
+                <div class="dash-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--accent-success);">
+                    <i class="fa-solid fa-sack-dollar"></i>
+                </div>
+                <div class="dash-info">
+                    <p>Faturamento Total</p>
+                    <h3 id="dash-faturamento">R$ 0,00</h3>
+                </div>
+            </div>
+            <!-- Ticket Medio -->
+            <div class="dash-card">
+                <div class="dash-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--accent-warning);">
+                    <i class="fa-solid fa-hand-holding-dollar"></i>
+                </div>
+                <div class="dash-info">
+                    <p>Ticket Médio</p>
+                    <h3 id="dash-ticket">R$ 0,00</h3>
+                </div>
+            </div>
+            <!-- Consultas Hoje -->
+            <div class="dash-card">
+                <div class="dash-icon" style="background: rgba(99, 102, 241, 0.1); color: var(--accent-primary);">
+                    <i class="fa-solid fa-calendar-check"></i>
+                </div>
+                <div class="dash-info">
+                    <p>Consultas Hoje</p>
+                    <h3 id="dash-consultas">0</h3>
+                </div>
+            </div>
+            <!-- Total de Leads -->
+            <div class="dash-card">
+                <div class="dash-icon" style="background: rgba(236, 72, 153, 0.1); color: var(--accent-danger);">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <div class="dash-info">
+                    <p>Total de Leads CRM</p>
+                    <h3 id="dash-leads">0</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHARTS SECTION -->
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+            <div class="chart-container" style="background: var(--bg-card); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                <h3 style="margin-bottom: 1rem; color: var(--text-color); font-size: 1.1rem; font-weight: 600;">Funil de Vendas</h3>
+                <canvas id="chart-funil" height="250"></canvas>
+            </div>
+            <div class="chart-container" style="background: var(--bg-card); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: flex; flex-direction: column;">
+                <h3 style="margin-bottom: 1rem; color: var(--text-color); font-size: 1.1rem; font-weight: 600;">Status de Hoje</h3>
+                <div style="flex-grow: 1; position: relative;">
+                    <canvas id="chart-status"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- RANKING VIP -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden;">
+            <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color); background: linear-gradient(90deg, rgba(245, 158, 11, 0.05), transparent);">
+                <h3 style="color: var(--accent-warning); font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fa-solid fa-crown"></i> Top Clientes VIP (Maior Faturamento)
+                </h3>
+            </div>
+            <div class="table-container" style="border-radius: 0; border: none; box-shadow: none;">
+                <table class="crm-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px; text-align: center;">Pos</th>
+                            <th>Paciente</th>
+                            <th>Celular</th>
+                            <th style="text-align: right;">Ticket Médio</th>
+                            <th style="text-align: right; color: var(--accent-success);">Total Gasto</th>
+                        </tr>
+                    </thead>
+                    <tbody id="list-ranking-vip">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 3rem;">
+                                <i class="fa-solid fa-circle-notch spin"></i> Analisando faturamento...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- ABA 1: KANBAN -->
+    <div class="board" id="view-kanban">
+        <!-- Coluna: Novos Leads -->
+        <div class="column col-leads">
+            <div class="column-header">
+                <div class="column-title">
+                    <i class="fa-solid fa-inbox text-blue-400"></i> Novos Leads
+                </div>
+                <div class="card-count" id="count-leads">0</div>
+            </div>
+            <div class="card-list" id="col-leads" ondragover="allowDrop(event)" ondrop="drop(event, 'col-leads')"></div>
+        </div>
+
+        <!-- Coluna: Em Atendimento -->
+        <div class="column col-atendimento">
+            <div class="column-header">
+                <div class="column-title">
+                    <i class="fa-brands fa-whatsapp" style="color: var(--accent-warning)"></i> Em Atendimento
+                </div>
+                <div class="card-count" id="count-atendimento">0</div>
+            </div>
+            <div class="card-list" id="col-atendimento" ondragover="allowDrop(event)" ondrop="drop(event, 'col-atendimento')"></div>
+        </div>
+
+        <!-- Coluna: Agendado -->
+        <div class="column col-agendado">
+            <div class="column-header">
+                <div class="column-title">
+                    <i class="fa-solid fa-calendar-check" style="color: var(--accent-success)"></i> Agendado
+                </div>
+                <div class="card-count" id="count-agendado">0</div>
+            </div>
+            <div class="card-list" id="col-agendado" ondragover="allowDrop(event)" ondrop="drop(event, 'col-agendado')"></div>
+        </div>
+
+        <!-- Coluna: Não Fechou -->
+        <div class="column col-perdido">
+            <div class="column-header">
+                <div class="column-title">
+                    <i class="fa-solid fa-xmark" style="color: var(--accent-danger)"></i> Não Fechou
+                </div>
+                <div class="card-count" id="count-perdido">0</div>
+            </div>
+            <div class="card-list" id="col-perdido" ondragover="allowDrop(event)" ondrop="drop(event, 'col-perdido')"></div>
+        </div>
+    </div>
+
+    
+
+    <!DOCTYPE html>
+<
+
+    html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Comercial - Clínica</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js for Dashboard -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <h1><i class="fa-solid fa-users-rays"></i> CRM Amigo App</h1>
+        </div>
+        
+        <div class="tabs-container">
+            <button class="tab-btn active" onclick="switchTab('kanban')" id="tab-kanban">
+                <i class="fa-solid fa-table-columns"></i> CRM Vendas
+            </button>
+            <button class="tab-btn" onclick="switchTab('agenda')" id="tab-agenda">
+                <i class="fa-regular fa-calendar-days"></i> Agenda Completa
+            </button>
+            <button class="tab-btn" onclick="switchTab('dashboard')" id="tab-dashboard" style="background: rgba(99, 102, 241, 0.1); color: var(--accent-primary); border-color: rgba(99, 102, 241, 0.3);">
+                <i class="fa-solid fa-chart-pie"></i> Dashboard VIP
+            </button>
+            
+            <div class="dropdown">
+                <button class="tab-btn" id="tab-relacionamento-main">
+                    <i class="fa-solid fa-heart" style="color: var(--accent-success)"></i> Relacionamento <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem; margin-left: 0.3rem; opacity: 0.7;"></i>
+                </button>
+                <div class="dropdown-content">
+                    <button class="tab-btn" onclick="switchTab('posvenda')" id="tab-posvenda">
+                        <i class="fa-solid fa-star" style="color: var(--accent-warning)"></i> Pós-Venda
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('faltantes')" id="tab-faltantes">
+                        <i class="fa-solid fa-user-xmark" style="color: var(--accent-danger)"></i> Faltantes
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('sumidos')" id="tab-sumidos">
+                        <i class="fa-solid fa-user-clock" style="color: var(--accent-danger)"></i> Sumidos
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('aniversariantes')" id="tab-aniversariantes">
+                        <i class="fa-solid fa-cake-candles" style="color: var(--accent-primary)"></i> Aniversariantes
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions" style="display: flex; gap: 1rem; align-items: center;">
+            <button class="btn-secondary" id="theme-toggle" onclick="toggleTheme()" title="Mudar Tema" style="padding: 0.5rem; width: 40px; height: 40px; justify-content: center;">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+            <button class="btn-primary" onclick="openNewLeadModal()">
+                <i class="fa-solid fa-plus"></i> Novo Paciente
+            </button>
+        </div>
+    </header>
+
+    <!-- ABA: DASHBOARD -->
+    <main class="relacionamento" id="view-dashboard" style="display: none; padding: 2rem; flex-grow: 1; flex-direction: column; gap: 2rem; background: var(--bg-color);">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h2 style="font-size: 1.8rem; display: flex; align-items: center; gap: 0.5rem; color: var(--text-color);">
+                    <i class="fa-solid fa-chart-pie" style="color: var(--accent-primary)"></i> Painel Executivo
+                </h2>
+                <p style="color: var(--text-muted); font-size: 1rem; margin-top: 0.2rem;">Visão geral de faturamento, vendas e engajamento</p>
+            </div>
+            <button class="btn-primary" onclick="fetchDashboardData()" style="padding: 0.6rem 1.5rem;">
+                <i class="fa-solid fa-rotate-right"></i> Atualizar Dados
+            </button>
+        </div>
+
+        <!-- 4 CARDS NO TOPO -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem;">
+            <!-- Faturamento -->
+            <div class="dash-card">
+                <div class="dash-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--accent-success);">
+                    <i class="fa-solid fa-sack-dollar"></i>
+                </div>
+                <div class="dash-info">
+                    <p>Faturamento Total</p>
+                    <h3 id="dash-faturamento">R$ 0,00</h3>
+                </div>
+            </div>
+            <!-- Ticket Medio -->
+            <div class="dash-card">
+                <div class="dash-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--accent-warning);">
+                    <i class="fa-solid fa-hand-holding-dollar"></i>
+                </div>
+                <div class="dash-info">
+                    <p>Ticket Médio</p>
+                    <h3 id="dash-ticket">R$ 0,00</h3>
+                </div>
+            </div>
+            <!-- Consultas Hoje -->
+            <div class="dash-card">
+                <div class="dash-icon" style="background: rgba(99, 102, 241, 0.1); color: var(--accent-primary);">
+                    <i class="fa-solid fa-calendar-check"></i>
+                </div>
+                <div class="dash-info">
+                    <p>Consultas Hoje</p>
+                    <h3 id="dash-consultas">0</h3>
+                </div>
+            </div>
+            <!-- Total de Leads -->
+            <div class="dash-card">
+                <div class="dash-icon" style="background: rgba(236, 72, 153, 0.1); color: var(--accent-danger);">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <div class="dash-info">
+                    <p>Total de Leads CRM</p>
+                    <h3 id="dash-leads">0</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHARTS SECTION -->
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+            <div class="chart-container" style="background: var(--bg-card); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                <h3 style="margin-bottom: 1rem; color: var(--text-color); font-size: 1.1rem; font-weight: 600;">Funil de Vendas</h3>
+                <canvas id="chart-funil" height="250"></canvas>
+            </div>
+            <div class="chart-container" style="background: var(--bg-card); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: flex; flex-direction: column;">
+                <h3 style="margin-bottom: 1rem; color: var(--text-color); font-size: 1.1rem; font-weight: 600;">Status de Hoje</h3>
+                <div style="flex-grow: 1; position: relative;">
+                    <canvas id="chart-status"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- RANKING VIP -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden;">
+            <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color); background: linear-gradient(90deg, rgba(245, 158, 11, 0.05), transparent);">
+                <h3 style="color: var(--accent-warning); font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fa-solid fa-crown"></i> Top Clientes VIP (Maior Faturamento)
+                </h3>
+            </div>
+            <div class="table-container" style="border-radius: 0; border: none; box-shadow: none;">
+                <table class="crm-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px; text-align: center;">Pos</th>
+                            <th>Paciente</th>
+                            <th>Celular</th>
+                            <th style="text-align: right;">Ticket Médio</th>
+                            <th style="text-align: right; color: var(--accent-success);">Total Gasto</th>
+                        </tr>
+                    </thead>
+                    <tbody id="list-ranking-vip">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 3rem;">
+                                <i class="fa-solid fa-circle-notch spin"></i> Analisando faturamento...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- ABA 1: KANBAN -->
+    <div class="board" id="view-kanban">
+        <!-- Coluna: Novos Leads -->
+        <div class="column col-leads">
+            <div class="column-header">
+                <div class="column-title">
+                    <i class="fa-solid fa-inbox text-blue-400"></i> Novos Leads
+                </div>
+                <div class="card-count" id="count-leads">0</div>
+            </div>
+            <div class="card-list" id="col-leads" ondragover="allowDrop(event)" ondrop="drop(event, 'col-leads')"></div>
+        </div>
+
+        <!-- Coluna: Em Atendimento -->
+        <div class="column col-atendimento">
+            <div class="column-header">
+                <div class="column-title">
+                    <i class="fa-brands fa-whatsapp" style="color: var(--accent-warning)"></i> Em Atendimento
+                </div>
+                <div class="card-count" id="count-atendimento">0</div>
+            </div>
+            <div class="card-list" id="col-atendimento" ondragover="allowDrop(event)" ondrop="drop(event, 'col-atendimento')"></div>
+        </div>
+
+        <!-- Coluna: Agendado -->
+        <div class="column col-agendado">
+            <div class="column-header">
+                <div class="column-title">
+                    <i class="fa-solid fa-calendar-check" style="color: var(--accent-success)"></i> Agendado
+                </div>
+                <div class="card-count" id="count-agendado">0</div>
+            </div>
+            <div class="card-list" id="col-agendado" ondragover="allowDrop(event)" ondrop="drop(event, 'col-agendado')"></div>
+        </div>
+
+        <!-- Coluna: Não Fechou -->
+        <div class="column col-perdido">
+            <div class="column-header">
+                <div class="column-title">
+                    <i class="fa-solid fa-xmark" style="color: var(--accent-danger)"></i> Não Fechou
+                </div>
+                <div class="card-count" id="count-perdido">0</div>
+            </div>
+            <div class="card-list" id="col-perdido" ondragover="allowDrop(event)" ondrop="drop(event, 'col-perdido')"></div>
+        </div>
+    </div>
+
+    <!-- Modal Novo Lead -->
+    <div class="modal-overlay" id="modalNewLead">
+        <div class="modal">
+            <h2><i class="fa-solid fa-user-plus"></i> Cadastrar Paciente</h2>
+            <div class="form-group">
+                <label>Nome do Paciente</label>
+                <input type="text" id="nl-nome" placeholder="Ex: Maria da Silva">
+            </div>
+            <div class="form-group">
+                <label>WhatsApp</label>
+                <input type="text" id="nl-telefone" placeholder="(61) 99999-9999">
+            </div>
+            <div class="form-group">
+                <label>Data de Nascimento</label>
+                <input type="date" id="lead-born" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>Origem (Opcional)</label>
+                <select id="lead-origem" class="form-control">
+                    <option value="Meta Ads">Meta Ads (Facebook/Insta)</option>
+                    <option value="Google Meu Negócio">Google Meu Negócio</option>
+                    <option value="Indicação">Indicação</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModals()">Cancelar</button>
+                <button class="btn-save" onclick="saveNewLead()">Salvar Lead</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Agendamento (Integração) -->
+    <div class="modal-overlay" id="modalAgendamento">
+        <div class="modal">
+            <h2><i class="fa-solid fa-robot" style="color: var(--accent-primary)"></i> Integração Amigo App</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                Você arrastou este paciente para "Agendado". Confirme os dados abaixo para enviar automaticamente para a agenda do Amigo App via Vercel.
+            </p>
+            <form id="form-agendar">
+            <input type="hidden" id="ag-lead-id">            <!-- Campos extras para agendamento direto pela grade -->
+            <div id="directScheduleFields" style="display: none;">
+                <div class="form-group">
+                    <label>Nome do Paciente</label>
+                    <input type="text" id="ag-patient-name" class="form-control" placeholder="Ex: João da Silva">
+                </div>
+                <div class="form-group">
+                    <label>Telefone (WhatsApp)</label>
+                    <input type="text" id="ag-patient-phone" class="form-control" placeholder="(61) 99999-9999">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Local (Clínica)</label>
+                <select id="ag-place" class="form-control" required>
+                    <option value="">Carregando locais...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Profissional (Médico/Estética)</label>
+                <select id="ag-user" class="form-control" required>
+                    <option value="">Carregando profissionais...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Procedimento / Serviço</label>
+                <select id="ag-event" class="form-control" required>
+                    <option value="">Carregando serviços...</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <div class="form-group" style="flex: 1;">
+                    <label>Data</label>
+                    <input type="date" id="ag-data" class="form-control" required>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Horário</label>
+                    <input type="time" id="ag-hora" class="form-control" required>
+                </div>
+            </div>
+            </form>
+            
+            <div class="integration-loader" id="integrationLoader">
+                <i class="fa-solid fa-circle-notch spin"></i> Chamando API da Vercel (Seguro)...
+            </div>
+
+            <div class="modal-actions" id="integrationActions">
+                <button class="btn-cancel" onclick="cancelAgendamento()">Desfazer</button>
+                <button class="btn-save" onclick="confirmAgendamento()">Agendar no Sistema</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ABA: PÓS-VENDA -->
+    <main class="relacionamento" id="view-posvenda" style="display: none; padding: 2rem; flex-grow: 1; flex-direction: column;">
+        <div style="margin-bottom: 2rem;">
+            <h2 style="font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-star" style="color: var(--accent-warning)"></i> Relacionamento: Pós-Venda (7~15 dias) <span id="count-posvenda" style="background: rgba(255,255,255,0.1); padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 1rem; margin-left: auto;">0</span></h2>
+            <p style="color: var(--text-muted); margin-top: 0.5rem;">Pacientes que realizaram procedimentos recentemente. Ideal para pedir feedback e avaliação.</p>
+        </div>
+        <div class="table-container">
+            <table class="crm-table">
+                <thead>
+                    <tr>
+                        <th>Paciente</th>
+                        <th>Telefone</th>
+                        <th>Último Atendimento</th>
+                        <th style="width: 220px; text-align: center;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="list-posvenda">
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 3rem;">
+                            <i class="fa-solid fa-circle-notch spin"></i> Buscando no histórico...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- ABA: FALTANTES -->
+    <main class="relacionamento" id="view-faltantes" style="display: none; padding: 2rem; flex-grow: 1; flex-direction: column;">
+        <div style="margin-bottom: 2rem;">
+            <h2 style="font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-user-xmark" style="color: var(--accent-danger)"></i> Relacionamento: Faltantes / Cancelados <span id="count-faltantes" style="background: rgba(255,255,255,0.1); padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 1rem; margin-left: auto;">0</span></h2>
+            <p style="color: var(--text-muted); margin-top: 0.5rem;">Pacientes que agendaram mas não compareceram. Tente reagendar a consulta.</p>
+        </div>
+        <div class="table-container">
+            <table class="crm-table">
+                <thead>
+                    <tr>
+                        <th>Paciente</th>
+                        <th>Telefone</th>
+                        <th>Último Atendimento</th>
+                        <th style="width: 220px; text-align: center;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="list-faltantes">
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 3rem;">
+                            <i class="fa-solid fa-circle-notch spin"></i> Buscando no histórico...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- ABA: SUMIDOS -->
+    <main class="relacionamento" id="view-sumidos" style="display: none; padding: 2rem; flex-grow: 1; flex-direction: column;">
+        <div style="margin-bottom: 2rem;">
+            <h2 style="font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-user-clock" style="color: var(--accent-danger)"></i> Relacionamento: Sumidos (+45 dias) <span id="count-sumidos" style="background: rgba(255,255,255,0.1); padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 1rem; margin-left: auto;">0</span></h2>
+            <p style="color: var(--text-muted); margin-top: 0.5rem;">Pacientes sem novos agendamentos há mais de 45 dias. Faça uma campanha de resgate.</p>
+        </div>
+        <div class="table-container">
+            <table class="crm-table">
+                <thead>
+                    <tr>
+                        <th>Paciente</th>
+                        <th>Telefone</th>
+                        <th>Último Atendimento</th>
+                        <th style="width: 220px; text-align: center;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="list-sumidos">
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 3rem;">
+                            <i class="fa-solid fa-circle-notch spin"></i> Buscando no histórico...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- ABA: ANIVERSARIANTES -->
+    <main class="relacionamento" id="view-aniversariantes" style="display: none; padding: 2rem; flex-grow: 1; flex-direction: column; gap: 2rem;">
+        
+        <!-- BLOCO 1: HOJE (API AO VIVO) -->
+        <div style="background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 8px; padding: 1.5rem;">
+            <div style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h2 style="font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem; color: var(--accent-warning);">
+                        <i class="fa-solid fa-cake-candles"></i> Aniversariantes de Hoje 
+                        <span id="count-aniversariantes-hoje" style="background: var(--accent-warning); color: #000; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 1rem; margin-left: 0.5rem;">0</span>
+                    </h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem;">Lista ao vivo, sincronizada diretamente com a API oficial do Amigo App.</p>
+                </div>
+            </div>
+
+            <div class="table-container" style="background: transparent;">
+                <table class="crm-table">
+                    <thead>
+                        <tr>
+                            <th>Paciente</th>
+                            <th>Celular</th>
+                            <th>Idade Alcançada</th>
+                            <th style="width: 220px; text-align: center;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="list-aniversariantes-hoje">
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                                <i class="fa-solid fa-circle-notch spin"></i> Consultando a API...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- BLOCO 2: MÊS (PLANILHA) -->
+        <div style="border-top: 1px solid var(--border-color); padding-top: 2rem;">
+            <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h2 style="font-size: 1.3rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-calendar-days" style="color: var(--accent-primary)"></i> Aniversariantes do Mês
+                        <span id="count-aniversariantes-mes" style="background: rgba(255,255,255,0.1); padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.9rem; margin-left: 0.5rem;">0</span>
+                    </h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem;">Lendo automaticamente da sua planilha salva (aniversariantes.csv).</p>
+                </div>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <label for="csvUpdateInput" class="btn-secondary" style="cursor: pointer; padding: 0.5rem 1rem; border: 1px solid var(--border-color); border-radius: 6px; display: inline-flex; align-items: center; gap: 0.5rem; background: transparent;">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Atualizar Planilha
+                    </label>
+                    <input type="file" id="csvUpdateInput" accept=".csv" style="display: none;" onchange="uploadNovaPlanilha(event)">
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="crm-table">
+                    <thead>
+                        <tr>
+                            <th>Paciente</th>
+                            <th>Celular</th>
+                            <th>Data de Nascimento</th>
+                            <th style="width: 220px; text-align: center;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="list-aniversariantes-mes">
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 3rem;">
+                                <i class="fa-solid fa-circle-notch spin"></i> Lendo arquivo local...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- ABA 2: AGENDA GRADE COMPLETA -->
+    <div class="agenda-grid-container" id="view-agenda" style="display: none;">
+        <div class="agenda-grid-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <!-- Lado Esquerdo (Busca) -->
+            <div class="agenda-actions">
+                <div style="position: relative;">
+                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                    <input type="text" id="agenda-search-input" placeholder="Buscar paciente..." oninput="filterAgenda(this.value)" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: var(--text-color); padding: 0.5rem 1rem 0.5rem 2.2rem; border-radius: 8px; outline: none; width: 220px; transition: all 0.3s ease;">
+                </div>
+            </div>
+            
+            <!-- Lado Direito (Navegação de Data) -->
+            <div class="agenda-filters" style="display: flex; align-items: center; gap: 0.5rem; font-family: 'Inter', sans-serif;">
+                <button class="btn-secondary" style="border: 1px solid var(--border-color); padding: 0.4rem 0.7rem; border-radius: 6px; background: transparent; color: var(--text-color);" onclick="changeAgendaDate(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+                <span id="agenda-date-display" style="font-weight: 700; font-size: 0.95rem; text-align: center; color: var(--text-color); margin: 0 0.5rem;">Hoje</span>
+                <button class="btn-secondary" style="border: 1px solid var(--border-color); padding: 0.4rem 0.7rem; border-radius: 6px; background: transparent; color: var(--text-color);" onclick="changeAgendaDate(1)"><i class="fa-solid fa-chevron-right"></i></button>
+                <button class="btn-secondary" style="border: 1px solid var(--border-color); padding: 0.4rem 1rem; border-radius: 6px; background: transparent; font-weight: 500; font-size: 0.9rem; color: var(--text-color);" onclick="resetAgendaDate()">Hoje</button>
+                <div style="position: relative;">
+                    <button class="btn-secondary" style="border: 1px solid var(--border-color); padding: 0.4rem 0.7rem; border-radius: 6px; background: transparent; color: var(--text-color);" onclick="document.getElementById('hidden-date-picker').showPicker()"><i class="fa-regular fa-calendar-check"></i></button>
+                    <input type="date" id="hidden-date-picker" onchange="jumpToDate(this.value)" style="position: absolute; opacity: 0; width: 10px; height: 10px; bottom: 0; right: 0; pointer-events: none; border: none; padding: 0; z-index: -1;">
+                </div>
+                <div class="agenda-loader" style="display: none; margin-left: 0.5rem;"><i class="fa-solid fa-circle-notch spin"></i></div>
+            </div>
+        </div>
+        
+        <div class="agenda-grid-wrapper">
+            <div class="agenda-grid-layout" id="agenda-grid-layout">
+                <!-- O cabeçalho das colunas (Horário e Profissionais) será injetado pelo JS -->
+                
+                <!-- CORPO DA GRADE (Gerado via JS) -->
+                <div class="grid-body" id="agenda-grid-body">
+                    <!-- Horários e blocos de consulta -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+
+    <script src="app.js"></script>
+</body>
+</html>
