@@ -1,7 +1,5 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import fs from 'fs';
 import multer from 'multer';
 import crypto from 'crypto';
@@ -9,14 +7,11 @@ import crypto from 'crypto';
 // Configura o dotenv para ler o arquivo .env
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 const app = express();
 app.use(express.json());
 
 // Serve a pasta atual como arquivos estáticos (Frontend)
-app.use(express.static(__dirname));
+app.use(express.static(process.cwd()));
 
 // Espelho da Rota Serverless para Listar Agenda (Local)
 app.get('/api/agenda', async (req, res) => {
