@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import multer from 'multer';
-import crypto from 'node:crypto';
+import crypto from 'crypto';
 
 // Configura o dotenv para ler o arquivo .env
 dotenv.config();
