@@ -375,14 +375,14 @@ function saveNewLead() {
     const email = emailEl ? emailEl.value : '';
     const fb_click_id = fbcEl ? fbcEl.value : '';
     
-    if(!nome || !telefone || !born) {
-        alert("Preencha Nome, Telefone e Data de Nascimento!");
+    if(!telefone) {
+        alert("O número de WhatsApp é obrigatório para cadastrar o paciente!");
         return;
     }
 
     const newLead = {
         id: Date.now().toString(),
-        nome,
+        nome: nome || 'Lead sem nome',
         telefone,
         origem,
         born,
