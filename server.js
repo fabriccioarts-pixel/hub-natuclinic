@@ -400,9 +400,9 @@ app.put('/api/leads/:id', async (req, res) => {
         const lead = leadRows && leadRows.length > 0 ? leadRows[0] : null;
 
         if (column_id !== undefined && notas !== undefined) {
-            await queryD1('UPDATE leads SET column_id = ?, notas = ? WHERE id = ?', [column_id, notas, id]);
+            await queryD1('UPDATE leads SET column_id = ?, notas = ? WHERE id = ?', [column_id || 'col-novos', notas, id]);
         } else if (column_id !== undefined) {
-            await queryD1('UPDATE leads SET column_id = ? WHERE id = ?', [column_id, id]);
+            await queryD1('UPDATE leads SET column_id = ? WHERE id = ?', [column_id || 'col-novos', id]);
         } else if (notas !== undefined) {
             await queryD1('UPDATE leads SET notas = ? WHERE id = ?', [notas, id]);
         }

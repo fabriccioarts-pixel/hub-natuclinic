@@ -67,8 +67,8 @@ async function fetchLeadsFromServer() {
         const url = loggedUser ? `/api/leads?owner_id=${loggedUser.username}` : '/api/leads';
         const res = await fetch(url);
         const rows = await res.json();
-        // Mapear column_id do banco de volta para column do JS local
-        leads = (rows || []).map(r => ({ ...r, column: r.column_id }));
+        // Mapear column_id do banco de volta para column do JS local, com fallback seguro para col-novos se for null
+        leads = (rows || []).map(r => ({ ...r, column: r.column_id || 'col-novos' }));
         renderBoard();
     } catch (e) {
         console.error('Erro ao buscar leads:', e);
