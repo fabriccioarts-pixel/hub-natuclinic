@@ -18,6 +18,7 @@
 </head>
 
 <body>
+<body>
     <!-- LOGIN OVERLAY -->
     <div id="login-overlay" class="modal-overlay active"
         style="z-index: 9999; background: var(--bg-color); display: flex; align-items: center; justify-content: center;">
@@ -98,6 +99,10 @@
             <button class="btn-secondary" onclick="exportarCSVFinanceiro()" title="Baixar Planilha Financeira"
                 style="display: flex; align-items: center; gap: 0.5rem; background: var(--accent-success); color: white; border: none; font-weight: 500;">
                 <i class="fa-solid fa-file-csv"></i> Baixar Planilha
+            </button>
+            <button class="btn-secondary" onclick="openMktReportModal()" title="Relatório de Marketing"
+                style="display: flex; align-items: center; gap: 0.5rem; background: #6c5ce7; color: white; border: 1px solid white; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <i class="fa-solid fa-chart-pie"></i> Relatório MKT
             </button>
             <div class="dropdown" style="position: relative;">
                 <div style="position: relative; cursor: pointer;" onclick="toggleNotificationsMenu()">
@@ -210,6 +215,14 @@
                 <input type="date" id="lead-born" class="form-control" required>
             </div>
             <div class="form-group">
+                <label>E-mail (Para a Meta Ads)</label>
+                <input type="email" id="nl-email" class="form-control" placeholder="email@exemplo.com">
+            </div>
+            <div class="form-group">
+                <label>ID do Clique Meta (fbclid/ctwa_clid)</label>
+                <input type="text" id="nl-fb-click-id" class="form-control" placeholder="Opcional">
+            </div>
+            <div class="form-group">
                 <label>Origem (Opcional)</label>
                 <select id="lead-origem" class="form-control">
                     <option value="Meta Ads">Meta Ads (Facebook/Insta)</option>
@@ -244,11 +257,22 @@
                             <!-- Sugestões de pacientes existentes injetadas via JS -->
                         </div>
                     </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <div class="form-group" style="flex: 1;">
+                            <label>Telefone (WhatsApp)</label>
+                            <input type="text" id="ag-patient-phone" class="form-control" placeholder="(61) 99999-9999">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Data de Nascimento</label>
+                            <input type="date" id="ag-patient-born" class="form-control">
+                        </div>
+                    </div>
                     <div class="form-group">
-                        <label>Telefone (WhatsApp)</label>
-                        <input type="text" id="ag-patient-phone" class="form-control" placeholder="(61) 99999-9999">
+                        <label>E-mail</label>
+                        <input type="email" id="ag-patient-email" class="form-control" placeholder="email@exemplo.com">
                     </div>
                 </div>
+
 
 
                 <div class="form-group">
@@ -638,6 +662,7 @@
 
             <div class="modal-actions">
                 <button class="btn-cancel" onclick="closePatientDetailsModal()">Fechar</button>
+                <button class="btn-save" onclick="openEditAgendamentoModal()"><i class="fa-solid fa-pen"></i> Editar</button>
             </div>
         </div>
     </div>
@@ -697,6 +722,48 @@
         </div>
     </div>
 
+    <!-- MODAL RELATÓRIO MKT -->
+    <div id="modalMktReport" class="modal-overlay">
+        <div class="modal" style="max-width: 650px; width: 90%; max-height: 80vh; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.3rem;"><i class="fa-solid fa-chart-pie" style="color: var(--accent-primary); margin-right: 0.5rem;"></i> Relatório de Marketing - Amigo App (Este Mês)</h2>
+                <i class="fa-solid fa-xmark" style="cursor: pointer; font-size: 1.2rem; color: var(--text-muted);" onclick="closeMktReportModal()"></i>
+            </div>
+            
+            <div id="mkt-report-loader" style="display: flex; justify-content: center; align-items: center; padding: 2rem;">
+                <i class="fa-solid fa-circle-notch spin" style="font-size: 2rem; color: var(--accent-primary);"></i>
+            </div>
+
+            <div id="mkt-report-content" style="display: none; flex: 1; overflow-y: auto;">
+                <div style="background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2); padding: 1rem; border-radius: 8px; text-align: center; margin-bottom: 1rem;">
+                    <span style="font-size: 0.9rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Total de Agendamentos do Marketing</span>
+                    <strong style="font-size: 1.8rem; color: var(--accent-primary);" id="mkt-total-count">0</strong>
+                </div>
+
+                <div class="table-container" style="overflow: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Data / Hora</th>
+                                <th>Paciente</th>
+                                <th>Telefone</th>
+                                <th>Procedimento</th>
+                            </tr>
+                        </thead>
+                        <tbody id="mkt-report-tbody">
+                            <!-- Injetado via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem;">
+                <button class="btn-secondary" onclick="closeMktReportModal()">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts da Aplicação -->
     <script src="app.js"></script>
 </body>
 

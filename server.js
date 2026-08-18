@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import multer from 'multer';
+import crypto from 'crypto';
 
 // Configura o dotenv para ler o arquivo .env
 dotenv.config();
@@ -132,7 +133,9 @@ app.get('/api/buscar-paciente', async (req, res) => {
                 pacientes.push({
                     id: att.patient.id,
                     nome: att.patient.name,
-                    telefone: att.patient.cellphone || att.patient.contact_cellphone || ''
+                    telefone: att.patient.cellphone || att.patient.contact_cellphone || '',
+                    email: att.patient.email || '',
+                    born: att.patient.born || att.patient.birthdate || ''
                 });
             }
         }
@@ -155,7 +158,7 @@ app.post('/api/init-db', async (req, res) => {
             )
         `);
         
-        await queryD1(`DROP TABLE IF EXISTS leads`);
+        // Removed DROP TABLE IF EXISTS leads to prevent data loss
         
         await queryD1(`
             CREATE TABLE IF NOT EXISTS leads (
@@ -166,9 +169,15 @@ app.post('/api/init-db', async (req, res) => {
                 born TEXT,
                 owner_id TEXT,
                 column_id TEXT DEFAULT 'col-novos',
+                fb_click_id TEXT,
+                email TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         `);
+        
+        // Tentativa de adicionar as colunas caso a tabela já exista (ignora o erro se já existirem)
+        try { await queryD1('ALTER TABLE leads ADD COLUMN fb_click_id TEXT'); } catch(e) {}
+        try { await queryD1('ALTER TABLE leads ADD COLUMN email TEXT'); } catch(e) {}
         
         await queryD1(`
             CREATE TABLE IF NOT EXISTS crm_users (
@@ -316,13 +325,63 @@ app.get('/api/leads', async (req, res) => {
     }
 });
 
+// ==========================================
+// FUNÇÃO DE ENVIO PARA META CAPI
+// ==========================================
+async function sendMetaCapiEvent(eventName, userData) {
+    const { META_PIXEL_ID, META_ACCESS_TOKEN } = process.env;
+    if (!META_PIXEL_ID || !META_ACCESS_TOKEN) return;
+
+    try {
+        const hashData = (data) => {
+            if (!data) return undefined;
+            const clean = data.trim().toLowerCase();
+            return crypto.createHash('sha256').update(clean).digest('hex');
+        };
+
+        const phoneHash = hashData(userData.telefone ? userData.telefone.replace(/\D/g, '') : '');
+        const emailHash = hashData(userData.email);
+
+        const payload = {
+            data: [{
+                event_name: eventName,
+                event_time: Math.floor(Date.now() / 1000),
+                action_source: 'system_generated',
+                user_data: {
+                    ph: phoneHash ? [phoneHash] : undefined,
+                    em: emailHash ? [emailHash] : undefined,
+                    fbc: userData.fb_click_id ? `fb.1.${Date.now()}.${userData.fb_click_id}` : undefined,
+                    client_user_agent: 'Sistema_Clinica_CRM/1.0'
+                }
+            }]
+        };
+
+        const url = `https://graph.facebook.com/v19.0/${META_PIXEL_ID}/events?access_token=${META_ACCESS_TOKEN}`;
+        
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await res.json();
+        if (!res.ok) {
+            console.error(`Erro ao enviar evento ${eventName} para a Meta:`, result);
+        } else {
+            console.log(`Evento ${eventName} enviado para a Meta com sucesso!`);
+        }
+    } catch (err) {
+        console.error("Exceção ao disparar Meta CAPI:", err);
+    }
+}
+
 // Criar um novo lead
 app.post('/api/leads', async (req, res) => {
-    const { id, nome, telefone, origem, born, owner_id, column_id } = req.body;
+    const { id, nome, telefone, origem, born, owner_id, column_id, fb_click_id, email } = req.body;
     try {
         await queryD1(
-            'INSERT INTO leads (id, nome, telefone, origem, born, owner_id, column_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [id, nome, telefone || '', origem || '', born || '', owner_id || null, column_id || 'col-novos']
+            'INSERT INTO leads (id, nome, telefone, origem, born, owner_id, column_id, fb_click_id, email) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [id, nome, telefone || '', origem || '', born || '', owner_id || null, column_id || 'col-novos', fb_click_id || '', email || '']
         );
         res.json({ success: true });
     } catch (e) {
@@ -335,10 +394,18 @@ app.put('/api/leads/:id', async (req, res) => {
     const { id } = req.params;
     const { column_id } = req.body;
     try {
+        const leadRows = await queryD1('SELECT * FROM leads WHERE id = ?', [id]);
+        const lead = leadRows && leadRows.length > 0 ? leadRows[0] : null;
+
         await queryD1(
             'UPDATE leads SET column_id = ? WHERE id = ?',
             [column_id, id]
         );
+
+        if (column_id === 'col-atendimento' && lead) {
+            sendMetaCapiEvent('Lead', lead);
+        }
+
         res.json({ success: true });
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -495,6 +562,18 @@ app.post('/api/agendar', async (req, res) => {
     
     // Convertendo os dados do CRM para o formato estrito do Amigo App
         const rawPhone = payload.patient_phone || payload.phone || '';
+        
+        let nameParts = (payload.patient_name || '').trim().split(' ');
+        let firstName = nameParts[0] || 'Desconhecido';
+        
+        // Se já existe (patient_id presente), não adiciona a tag [MKT] para não sujar o cadastro
+        let lastName = '';
+        if (payload.patient_id) {
+            lastName = nameParts.slice(1).join(' ');
+        } else {
+            lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') + ' [MKT]' : '[MKT]';
+        }
+
         const amigoPayload = {
             start_date: `${payload.appointment_date} ${payload.appointment_time}`,
             place_id: parseInt(payload.place_id) || 32337,
@@ -502,17 +581,28 @@ app.post('/api/agendar', async (req, res) => {
             user_id: parseInt(payload.user_id) || 102962,
             observation: "Origem: CRM de Vendas/Marketing",
             patient: {
-                name: payload.patient_name + " [MKT]",
+                name: firstName,
+                last_name: lastName,
                 cellphone: rawPhone.replace(/\D/g, ''),
                 contact_cellphone: rawPhone.replace(/\D/g, ''),
                 phone: rawPhone.replace(/\D/g, ''),
-                born: payload.patient_born || "1990-01-01" 
+                born: payload.patient_born || "1990-01-01",
+                email: payload.patient_email || ''
             }
         };
+        
+        if (payload.patient_id) {
+            amigoPayload.patient.id = parseInt(payload.patient_id);
+        }
     
     try {
-        const response = await fetch('https://amigobot-api.amigoapp.com.br/attendances', {
-            method: 'POST',
+        const endpoint = payload.attendance_id 
+            ? `https://amigobot-api.amigoapp.com.br/attendances/${payload.attendance_id}`
+            : 'https://amigobot-api.amigoapp.com.br/attendances';
+        const method = payload.attendance_id ? 'PUT' : 'POST';
+
+        const response = await fetch(endpoint, {
+            method: method,
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${AMIGO_API_TOKEN}`
@@ -525,7 +615,10 @@ app.post('/api/agendar', async (req, res) => {
         
         if (!response.ok) {
             console.error("Erro da API do Amigo:", data);
-            throw new Error(data?.message?.message || data.message || 'Erro ao criar agendamento no Amigo App');
+            if (method === 'PUT' && data.message && data.message.includes("Status deve ser")) {
+                throw new Error('O Amigo App bloqueia o reagendamento por ferramentas externas. Para mudar o horário ou dados, altere diretamente no site do Amigo App, ou cancele este agendamento e crie um novo.');
+            }
+            throw new Error(data?.message?.message || data.message || 'Erro ao agendar/atualizar no Amigo App');
         }
         
         // --- SALVANDO DADOS FINANCEIROS NO D1 ---
@@ -551,9 +644,20 @@ app.post('/api/agendar', async (req, res) => {
         }
         // ----------------------------------------
         
+        // --- ENVIO META CAPI (AGENDAMENTO) ---
+        // Apenas disparar evento se não for um reagendamento (ou se quiser pode disparar sempre, mas usualmente é no novo)
+        if (!payload.attendance_id) {
+            sendMetaCapiEvent('Schedule', {
+                telefone: payload.patient_phone,
+                email: payload.patient_email,
+                fb_click_id: payload.fb_click_id
+            });
+        }
+        // ----------------------------------------
+
         res.status(200).json({ 
             success: true, 
-            message: 'Agendamento criado via API Real do Amigo App!' 
+            message: payload.attendance_id ? 'Agendamento atualizado com sucesso!' : 'Agendamento criado via API Real do Amigo App!' 
         });
     } catch (error) {
         res.status(400).json({ error: error.message, details: error.message });
@@ -901,6 +1005,48 @@ setInterval(async () => {
         console.error("Erro no radar de notificações:", e.message);
     }
 }, 5 * 60 * 1000); 
+
+// ==========================================
+// RELATÓRIO DE MARKETING DO AMIGO APP (MÊS ATUAL)
+// ==========================================
+app.get('/api/relatorio-mkt', async (req, res) => {
+    try {
+        const AMIGO_API_TOKEN = process.env.AMIGO_API_TOKEN;
+        if (!AMIGO_API_TOKEN) return res.status(500).json({ error: 'Token não configurado' });
+
+        const dataAtual = new Date();
+        const primeiroDia = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), 1).toISOString().split('T')[0];
+        const ultimoDia = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 1, 0).toISOString().split('T')[0];
+
+        const headers = { 'Authorization': `Bearer ${AMIGO_API_TOKEN}` };
+        const response = await fetch(`https://amigobot-api.amigoapp.com.br/attendances?start_date=${primeiroDia}&end_date=${ultimoDia}&status=ALL`, { headers });
+        const json = await response.json();
+        const attendances = json.data || [];
+
+        // Filtra por [MKT] no nome do paciente ou observação do CRM
+        const agendamentosMkt = attendances.filter(att => {
+            const pName = att.patient?.name || '';
+            const obs = att.observation || '';
+            return pName.includes('[MKT]') || obs.includes('Origem: CRM');
+        });
+
+        const reportData = agendamentosMkt.map(att => ({
+            id: att.id,
+            start_date: att.start_date,
+            patient_name: att.patient?.name || 'Desconhecido',
+            patient_phone: att.patient?.contact_cellphone || att.patient?.cellphone || 'N/A',
+            procedure: att.agenda_event?.name || 'Sem procedimento'
+        }));
+        
+        // Ordena por data (mais recentes primeiro)
+        reportData.sort((a, b) => new Date(b.start_date) - new Date(a.start_date));
+
+        res.json({ success: true, count: reportData.length, data: reportData });
+    } catch (e) {
+        console.error("Erro no relatorio mkt:", e);
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
 
 // Iniciar Servidor (Sempre roda localmente, exceto na Vercel)
 if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {

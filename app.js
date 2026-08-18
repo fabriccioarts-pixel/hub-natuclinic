@@ -252,10 +252,13 @@ function drop(ev, targetColumnId) {
 
 // === AUTOCOMPLETE DE PACIENTES EXISTENTES NO AGENDAMENTO ===
 let _buscaTimer = null; // Debounce para não chamar a API a cada letra
+window.selectedPatientId = null; // Guardar ID do paciente se for existente
 
 function buscarPacienteExistente(termo) {
     const dropdown = document.getElementById('ag-patient-dropdown');
     if (!dropdown) return;
+    
+    window.selectedPatientId = null; // Reseta sempre que digitar algo
 
     if (!termo || termo.length < 2) {
         dropdown.style.display = 'none';
@@ -284,7 +287,7 @@ function buscarPacienteExistente(termo) {
             const vistos = new Set(doLeads.map(l => l.nome.toLowerCase()));
             const doAmigo = pacientes
                 .filter(p => !vistos.has(p.nome.toLowerCase()))
-                .map(p => ({ nome: p.nome, telefone: p.telefone || '', fonte: 'Amigo App' }));
+                .map(p => ({ id: p.id, nome: p.nome, telefone: p.telefone || '', email: p.email || '', born: p.born || '', fonte: 'Amigo App' }));
 
             const todos = [...doLeads, ...doAmigo];
 
@@ -294,7 +297,7 @@ function buscarPacienteExistente(termo) {
             }
 
             dropdown.innerHTML = todos.map(r => `
-                <div onclick="selecionarPaciente('${r.nome.replace(/'/g, "\\'")}', '${(r.telefone || '').replace(/'/g, "\\'")}')"
+                <div onclick="selecionarPaciente('${r.nome.replace(/'/g, "\\'")}', '${(r.telefone || '').replace(/'/g, "\\'")}', '${r.id || ''}', '${(r.email || '').replace(/'/g, "\\'")}', '${(r.born || '').replace(/'/g, "\\'")}')"
                     style="padding: 0.7rem 1rem; cursor: pointer; border-bottom: 1px solid var(--border-color); transition: background 0.15s;"
                     onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
                     <div style="font-weight: 600; color: var(--text-color);">${r.nome}</div>
@@ -311,14 +314,28 @@ function buscarPacienteExistente(termo) {
     }, 500);
 }
 
-function selecionarPaciente(nome, telefone) {
+function selecionarPaciente(nome, telefone, id = '', email = '', born = '') {
     const nameInput = document.getElementById('ag-patient-name');
     const phoneInput = document.getElementById('ag-patient-phone');
+    const emailInput = document.getElementById('ag-patient-email');
+    const bornInput = document.getElementById('ag-patient-born');
     const dropdown = document.getElementById('ag-patient-dropdown');
 
     if (nameInput) nameInput.value = nome;
     if (phoneInput) phoneInput.value = telefone;
+    if (emailInput && email) emailInput.value = email;
+    if (bornInput && born) {
+        // Formata data caso precise (geralmente YYYY-MM-DD para input date)
+        try {
+            bornInput.value = born.split('T')[0];
+        } catch(e) {
+            bornInput.value = born;
+        }
+    }
+    
     if (dropdown) dropdown.style.display = 'none';
+    
+    window.selectedPatientId = id || null;
 }
 
 // Fecha o dropdown ao clicar fora
@@ -339,6 +356,10 @@ function closeModals() {
     document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
     document.getElementById('nl-nome').value = '';
     document.getElementById('nl-telefone').value = '';
+    const emailEl = document.getElementById('nl-email');
+    if (emailEl) emailEl.value = '';
+    const fbcEl = document.getElementById('nl-fb-click-id');
+    if (fbcEl) fbcEl.value = '';
     
     document.getElementById('integrationLoader').classList.remove('active');
     document.getElementById('integrationActions').style.display = 'flex';
@@ -349,6 +370,10 @@ function saveNewLead() {
     const telefone = document.getElementById('nl-telefone').value;
     const origem = document.getElementById('lead-origem').value;
     const born = document.getElementById('lead-born').value;
+    const emailEl = document.getElementById('nl-email');
+    const fbcEl = document.getElementById('nl-fb-click-id');
+    const email = emailEl ? emailEl.value : '';
+    const fb_click_id = fbcEl ? fbcEl.value : '';
     
     if(!nome || !telefone || !born) {
         alert("Preencha Nome, Telefone e Data de Nascimento!");
@@ -361,6 +386,8 @@ function saveNewLead() {
         telefone,
         origem,
         born,
+        email,
+        fb_click_id,
         column: 'col-leads'
     };
 
@@ -466,19 +493,30 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // === INTEGRAÇÃO COM A VERCEL (QUE FALA COM AMIGO APP) ===
+function resetAgendamentoForm() {
+    window.selectedPatientId = null;
+    const idsToClear = [
+        'ag-lead-id', 'ag-place', 'ag-user', 'ag-event', 'ag-event-search',
+        'ag-patient-name', 'ag-patient-phone', 'ag-patient-email', 'ag-patient-born'
+    ];
+    idsToClear.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    const confirmBtn = document.querySelector('#integrationActions .btn-save');
+    if (confirmBtn) confirmBtn.innerText = "Agendar no Sistema";
+}
+
 function openAgendamentoModal(cardId) {
     const lead = leads.find(l => l.id === cardId);
     if (!lead) return;
+    
+    resetAgendamentoForm();
     
     draggedLead = lead; // Configura o lead ativo do Kanban
     
     document.getElementById('ag-lead-id').value = cardId;
     document.getElementById('ag-data').value = new Date().toISOString().split('T')[0]; // Hoje
-    document.getElementById('ag-hora').value = '';
-    
-    document.getElementById('ag-place').value = '';
-    document.getElementById('ag-user').value = '';
-    document.getElementById('ag-event').value = '';
     
     document.getElementById('directScheduleFields').style.display = 'none';
     
@@ -488,9 +526,8 @@ function openAgendamentoModal(cardId) {
 }
 
 function openGridScheduleModal(doctorId, time) {
+    resetAgendamentoForm();
     draggedLead = null; // Não há lead ativo, agendamento direto
-    
-    document.getElementById('ag-lead-id').value = '';
     
     // Mostra os campos de nome/telefone
     document.getElementById('directScheduleFields').style.display = 'block';
@@ -501,8 +538,6 @@ function openGridScheduleModal(doctorId, time) {
     
     const docSelect = document.getElementById('ag-user');
     if (docSelect) docSelect.value = doctorId;
-    
-    document.getElementById('ag-event').value = '';
     
     renderDayChips(); // Iniciar sugestões
     
@@ -517,6 +552,9 @@ function cancelAgendamento() {
     closeAgendamentoModal();
 }
 
+window.currentEditingAttendanceId = null;
+window.currentEditingAttendance = null;
+
 function openPatientDetailsModal(attId, event) {
     if (event) event.stopPropagation(); // Previne o clique na grid-cell por baixo
     
@@ -524,6 +562,9 @@ function openPatientDetailsModal(attId, event) {
     
     const att = window.currentAgendaAttendances.find(a => String(a.id) === String(attId));
     if (!att) return;
+    
+    window.currentEditingAttendance = att;
+    window.currentEditingAttendanceId = att.id;
     
     document.getElementById('pd-name').innerText = (att.patient && att.patient.name) ? att.patient.name : 'Desconhecido';
     
@@ -566,6 +607,49 @@ function closePatientDetailsModal() {
     document.getElementById('modalPatientDetails').classList.remove('active');
 }
 
+function openEditAgendamentoModal() {
+    if (!window.currentEditingAttendance) return;
+    
+    closePatientDetailsModal();
+    resetAgendamentoForm();
+    
+    const att = window.currentEditingAttendance;
+    
+    draggedLead = null;
+    document.getElementById('ag-lead-id').value = '';
+    document.getElementById('directScheduleFields').style.display = 'block';
+    
+    if(att.start_date) {
+        try {
+            const parts = att.start_date.split('T');
+            if (parts.length === 2) {
+                document.getElementById('ag-data').value = parts[0];
+                document.getElementById('ag-hora').value = parts[1].substring(0,5);
+            }
+        } catch(e) {}
+    }
+    
+    document.getElementById('ag-patient-name').value = (att.patient && att.patient.name) ? att.patient.name.replace(' [MKT]','') : '';
+    document.getElementById('ag-patient-phone').value = (att.patient && att.patient.contact_cellphone) ? att.patient.contact_cellphone : '';
+    
+    const docSelect = document.getElementById('ag-user');
+    if (docSelect && att.user) docSelect.value = att.user.id;
+    
+    const eventHidden = document.getElementById('ag-event');
+    if (eventHidden && att.agenda_event) eventHidden.value = att.agenda_event.id;
+    
+    const eventSearch = document.getElementById('ag-event-search');
+    if (eventSearch && att.agenda_event) eventSearch.value = att.agenda_event.name;
+    
+    const placeSelect = document.getElementById('ag-place');
+    if (placeSelect && att.place) placeSelect.value = att.place.id;
+    
+    const confirmBtn = document.querySelector('#integrationActions .btn-save');
+    if (confirmBtn) confirmBtn.innerText = "Atualizar no Amigo App";
+    
+    document.getElementById('modalAgendamento').classList.add('active');
+}
+
 async function confirmAgendamento() {
     const dataAg = document.getElementById('ag-data').value;
     const horaAg = document.getElementById('ag-hora').value;
@@ -580,17 +664,26 @@ async function confirmAgendamento() {
     
     let leadName = "";
     let leadPhone = "";
+    let leadEmail = "";
     let patientBorn = "1990-01-01"; // Default exigido
+    
+    let fbClickId = '';
     
     if (draggedLead) {
         // Veio do Kanban
         leadName = draggedLead.nome;
         leadPhone = draggedLead.telefone;
+        leadEmail = draggedLead.email || '';
+        fbClickId = draggedLead.fb_click_id || '';
         if (draggedLead.born) patientBorn = draggedLead.born;
+        if (draggedLead.nascimento) patientBorn = draggedLead.nascimento;
     } else {
         // Veio direto da grade
         leadName = document.getElementById('ag-patient-name').value;
         leadPhone = document.getElementById('ag-patient-phone').value;
+        leadEmail = (document.getElementById('ag-patient-email') || {}).value || '';
+        const bornVal = (document.getElementById('ag-patient-born') || {}).value || '';
+        if (bornVal) patientBorn = bornVal;
         if (!leadName) {
             alert("Preencha o nome do paciente!");
             return;
@@ -617,12 +710,16 @@ async function confirmAgendamento() {
         procedure_name: procedureName,
         patient_name: leadName,
         patient_phone: leadPhone,
+        patient_email: leadEmail,
         patient_born: patientBorn,
+        fb_click_id: fbClickId,
         valor_primario: valor1,
         valor_secundario: valor2,
         status_pagamento: statusPag,
         origem: origemVal,
-        agendado_por: agendadoPor
+        agendado_por: agendadoPor,
+        attendance_id: window.currentEditingAttendanceId,
+        patient_id: window.selectedPatientId
     };
     
     const loader = document.getElementById('integrationLoader');
@@ -652,8 +749,14 @@ async function confirmAgendamento() {
         }
         closePatientDetailsModal();
         closeAgendamentoModal();
+        
+        // Reseta o botão de confirmação e id
+        const confirmBtn = document.querySelector('#integrationActions .btn-save');
+        if (confirmBtn) confirmBtn.innerText = "Agendar no Sistema";
+        window.currentEditingAttendanceId = null;
+        window.currentEditingAttendance = null;
     } catch (error) {
-        console.error("Erro ao agendar:", error);
+        console.error("Erro ao agendar/atualizar:", error);
         alert(error.message);
     } finally {
         loader.classList.remove('active');
@@ -1687,3 +1790,66 @@ async function clearAllNotifications() {
     } catch(e) {}
 }
 
+// ==========================================
+// RELATÓRIO MKT
+// ==========================================
+async function openMktReportModal() {
+    const modal = document.getElementById('modalMktReport');
+    const loader = document.getElementById('mkt-report-loader');
+    const content = document.getElementById('mkt-report-content');
+    const tbody = document.getElementById('mkt-report-tbody');
+    const countDisplay = document.getElementById('mkt-total-count');
+
+    if (!modal) return;
+    modal.classList.add('active');
+
+    // Reset view
+    loader.style.display = 'flex';
+    content.style.display = 'none';
+    tbody.innerHTML = '';
+    countDisplay.innerText = '0';
+
+    try {
+        const res = await fetch('/api/relatorio-mkt');
+        const json = await res.json();
+
+        if (json.success) {
+            countDisplay.innerText = json.count;
+            if (json.count === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Nenhum agendamento do MKT encontrado neste mês.</td></tr>';
+            } else {
+                tbody.innerHTML = json.data.map(item => {
+                    let dStr = item.start_date;
+                    try {
+                        const parts = item.start_date.split('T');
+                        const dateP = parts[0].split('-');
+                        dStr = `${dateP[2]}/${dateP[1]}/${dateP[0]} ${parts[1].substring(0,5)}`;
+                    } catch(e) {}
+
+                    return `
+                    <tr>
+                        <td>${dStr}</td>
+                        <td style="font-weight: 500;">${item.patient_name}</td>
+                        <td>${item.patient_phone}</td>
+                        <td><span style="background: rgba(99,102,241,0.1); color: var(--accent-primary); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;">${item.procedure}</span></td>
+                    </tr>
+                    `;
+                }).join('');
+            }
+        } else {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--accent-danger); padding: 1.5rem;">Erro ao carregar os dados.</td></tr>';
+        }
+    } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--accent-danger); padding: 1.5rem;">Falha na conexão com o servidor.</td></tr>';
+    } finally {
+        loader.style.display = 'none';
+        content.style.display = 'block';
+    }
+}
+
+function closeMktReportModal() {
+    const modal = document.getElementById('modalMktReport');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
