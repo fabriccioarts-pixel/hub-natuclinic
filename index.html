@@ -667,6 +667,25 @@
         </div>
     </div>
 
+    <!-- Modal Notas do Lead -->
+    <div class="modal-overlay" id="modalLeadNotes">
+        <div class="modal">
+            <h2><i class="fa-solid fa-note-sticky" style="color: var(--accent-warning)"></i> Notas do Lead</h2>
+            
+            <input type="hidden" id="ln-lead-id">
+            
+            <div class="form-group">
+                <label id="ln-lead-name" style="font-weight: 600; font-size: 1.1rem; color: var(--text-main); margin-bottom: 0.5rem; display: block;">Nome do Lead</label>
+                <textarea id="ln-notas" class="form-control" style="height: 150px; resize: vertical;" placeholder="Escreva observações, histórico de conversas ou detalhes importantes..."></textarea>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModals()">Cancelar</button>
+                <button class="btn-save" onclick="saveLeadNotes()"><i class="fa-solid fa-save"></i> Salvar Notas</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Gestão de Usuários -->
     <div class="modal-overlay" id="modalUsuarios">
         <div class="modal" style="max-width: 600px; width: 90%;">

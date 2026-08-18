@@ -171,6 +171,7 @@ app.post('/api/init-db', async (req, res) => {
                 column_id TEXT DEFAULT 'col-novos',
                 fb_click_id TEXT,
                 email TEXT,
+                notas TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         `);
@@ -178,6 +179,7 @@ app.post('/api/init-db', async (req, res) => {
         // Tentativa de adicionar as colunas caso a tabela já exista (ignora o erro se já existirem)
         try { await queryD1('ALTER TABLE leads ADD COLUMN fb_click_id TEXT'); } catch(e) {}
         try { await queryD1('ALTER TABLE leads ADD COLUMN email TEXT'); } catch(e) {}
+        try { await queryD1('ALTER TABLE leads ADD COLUMN notas TEXT'); } catch(e) {}
         
         await queryD1(`
             CREATE TABLE IF NOT EXISTS crm_users (
@@ -377,11 +379,11 @@ async function sendMetaCapiEvent(eventName, userData) {
 
 // Criar um novo lead
 app.post('/api/leads', async (req, res) => {
-    const { id, nome, telefone, origem, born, owner_id, column_id, fb_click_id, email } = req.body;
+    const { id, nome, telefone, origem, born, owner_id, column_id, fb_click_id, email, notas } = req.body;
     try {
         await queryD1(
-            'INSERT INTO leads (id, nome, telefone, origem, born, owner_id, column_id, fb_click_id, email) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [id, nome, telefone || '', origem || '', born || '', owner_id || null, column_id || 'col-novos', fb_click_id || '', email || '']
+            'INSERT INTO leads (id, nome, telefone, origem, born, owner_id, column_id, fb_click_id, email, notas) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [id, nome, telefone || '', origem || '', born || '', owner_id || null, column_id || 'col-novos', fb_click_id || '', email || '', notas || '']
         );
         res.json({ success: true });
     } catch (e) {
@@ -389,18 +391,21 @@ app.post('/api/leads', async (req, res) => {
     }
 });
 
-// Atualizar a coluna de um lead (arrastar e soltar)
+// Atualizar dados de um lead (coluna e/ou notas)
 app.put('/api/leads/:id', async (req, res) => {
     const { id } = req.params;
-    const { column_id } = req.body;
+    const { column_id, notas } = req.body;
     try {
         const leadRows = await queryD1('SELECT * FROM leads WHERE id = ?', [id]);
         const lead = leadRows && leadRows.length > 0 ? leadRows[0] : null;
 
-        await queryD1(
-            'UPDATE leads SET column_id = ? WHERE id = ?',
-            [column_id, id]
-        );
+        if (column_id !== undefined && notas !== undefined) {
+            await queryD1('UPDATE leads SET column_id = ?, notas = ? WHERE id = ?', [column_id, notas, id]);
+        } else if (column_id !== undefined) {
+            await queryD1('UPDATE leads SET column_id = ? WHERE id = ?', [column_id, id]);
+        } else if (notas !== undefined) {
+            await queryD1('UPDATE leads SET notas = ? WHERE id = ?', [notas, id]);
+        }
 
         if (column_id === 'col-atendimento' && lead) {
             sendMetaCapiEvent('Lead', lead);

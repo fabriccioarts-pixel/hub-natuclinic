@@ -193,6 +193,7 @@ function renderBoard() {
 
             card.innerHTML = `
                 <button class="delete-btn" onclick="deleteLead('${lead.id}')"><i class="fa-solid fa-trash"></i></button>
+                <button class="notes-btn" onclick="openNotesModal('${lead.id}')" style="position: absolute; right: 35px; top: 10px; background: none; border: none; color: ${lead.notas ? 'var(--accent-warning)' : 'var(--text-muted)'}; cursor: pointer; font-size: 1.1rem; transition: 0.2s;" onmouseover="this.style.color='var(--accent-warning)'" onmouseout="this.style.color='${lead.notas ? 'var(--accent-warning)' : 'var(--text-muted)'}'" title="Anotações do Lead"><i class="fa-solid fa-note-sticky"></i></button>
                 <div class="card-title">${lead.nome}</div>
                 <div class="card-info"><i class="fa-brands fa-whatsapp"></i> ${lead.telefone}</div>
                 <div class="tag"><i class="fa-solid fa-bullhorn"></i> ${lead.origem}</div>
@@ -395,6 +396,38 @@ function saveNewLead() {
     closeModals();
     renderBoard();
     saveLeadToServer(newLead);
+}
+
+function openNotesModal(id) {
+    const lead = leads.find(l => l.id === id);
+    if (!lead) return;
+    document.getElementById('ln-lead-id').value = id;
+    document.getElementById('ln-lead-name').innerText = lead.nome;
+    document.getElementById('ln-notas').value = lead.notas || '';
+    document.getElementById('modalLeadNotes').classList.add('active');
+}
+
+async function saveLeadNotes() {
+    const id = document.getElementById('ln-lead-id').value;
+    const notas = document.getElementById('ln-notas').value;
+    
+    const lead = leads.find(l => l.id === id);
+    if (lead) {
+        lead.notas = notas;
+        renderBoard(); // atualiza a cor do icone de notas
+        
+        try {
+            await fetch(`/api/leads/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notas })
+            });
+        } catch (e) {
+            console.error('Erro ao salvar notas', e);
+        }
+    }
+    
+    document.getElementById('modalLeadNotes').classList.remove('active');
 }
 
 function deleteLead(id) {
