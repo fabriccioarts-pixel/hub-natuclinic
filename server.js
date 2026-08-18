@@ -13,6 +13,8 @@ app.use(express.json());
 // Serve a pasta atual como arquivos estáticos (Frontend)
 app.use(express.static(process.cwd()));
 
+app.get('/api/ping', (req, res) => res.send('pong3'));
+
 // Espelho da Rota Serverless para Listar Agenda (Local)
 app.get('/api/agenda', async (req, res) => {
     const AMIGO_API_TOKEN = process.env.AMIGO_API_TOKEN;
