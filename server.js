@@ -979,34 +979,36 @@ app.post('/api/aniversariantes/upload', upload.single('csvFile'), (req, res) => 
 
 // ==== RADAR DE NOTIFICAÇÕES (POLLING) ====
 const notifiedAttendances = new Set();
-setInterval(async () => {
-    try {
-        const AMIGO_API_TOKEN = process.env.AMIGO_API_TOKEN;
-        if (!AMIGO_API_TOKEN) return;
-        
-        const d = new Date().toISOString().split('T')[0];
-        const res = await fetch(`https://amigobot-api.amigoapp.com.br/attendances?start_date=${d}&end_date=${d}&status=ALL`, {
-            headers: { 'Authorization': `Bearer ${AMIGO_API_TOKEN}` }
-        });
-        const json = await res.json();
-        const attendances = json.data || [];
-        
-        for (let att of attendances) {
-            if (att.status === 'done' && !notifiedAttendances.has(att.id)) {
-                notifiedAttendances.add(att.id);
-                const pName = att.patient?.name || 'Um paciente';
-                const msg = `✅ O atendimento de ${pName} foi finalizado com sucesso!`;
-                
-                await queryD1(
-                    'INSERT INTO crm_notifications (id, message, created_at) VALUES (?, ?, ?)',
-                    [Date.now().toString() + Math.random(), msg, att.start_date || new Date().toISOString()]
-                );
+if (!process.env.VERCEL) {
+    setInterval(async () => {
+        try {
+            const AMIGO_API_TOKEN = process.env.AMIGO_API_TOKEN;
+            if (!AMIGO_API_TOKEN) return;
+            
+            const d = new Date().toISOString().split('T')[0];
+            const res = await fetch(`https://amigobot-api.amigoapp.com.br/attendances?start_date=${d}&end_date=${d}&status=ALL`, {
+                headers: { 'Authorization': `Bearer ${AMIGO_API_TOKEN}` }
+            });
+            const json = await res.json();
+            const attendances = json.data || [];
+            
+            for (let att of attendances) {
+                if (att.status === 'done' && !notifiedAttendances.has(att.id)) {
+                    notifiedAttendances.add(att.id);
+                    const pName = att.patient?.name || 'Um paciente';
+                    const msg = `✅ O atendimento de ${pName} foi finalizado com sucesso!`;
+                    
+                    await queryD1(
+                        'INSERT INTO crm_notifications (id, message, created_at) VALUES (?, ?, ?)',
+                        [Date.now().toString() + Math.random(), msg, att.start_date || new Date().toISOString()]
+                    );
+                }
             }
+        } catch (e) {
+            console.error("Erro no radar de notificações:", e.message);
         }
-    } catch (e) {
-        console.error("Erro no radar de notificações:", e.message);
-    }
-}, 5 * 60 * 1000); 
+    }, 5 * 60 * 1000);
+}
 
 // ==========================================
 // RELATÓRIO DE MARKETING DO AMIGO APP (MÊS ATUAL)
