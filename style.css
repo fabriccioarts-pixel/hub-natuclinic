@@ -564,9 +564,9 @@ select.form-control option {
 .agenda-block strong { display: block; margin-bottom: 0.2rem; }
 
 /* Cores específicas baseadas no screenshot */
-.block-estetica { background: var(--bg-card); border: 1px solid var(--border-color); border-left: 4px solid #db2777; color: var(--text-main); } /* Rosa */
-.block-bloqueado { background: var(--bg-card); border: 1px solid var(--border-color); border-left: 4px solid #94a3b8; color: var(--text-main); } /* Cinza */
-.block-enfermagem { background: var(--bg-card); border: 1px solid var(--border-color); border-left: 4px solid #7c3aed; color: var(--text-main); } /* Roxo */
+.block-estetica { background: rgba(219, 39, 119, 0.15); border: 1px solid rgba(219, 39, 119, 0.3); border-left: 4px solid #db2777; color: var(--text-main); } /* Rosa */
+.block-bloqueado { background: rgba(148, 163, 184, 0.15); border: 1px solid rgba(148, 163, 184, 0.3); border-left: 4px solid #94a3b8; color: var(--text-main); } /* Cinza */
+.block-enfermagem { background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.3); border-left: 4px solid #7c3aed; color: var(--text-main); } /* Roxo */
 
 .relacionamento-grid {
     display: grid;
