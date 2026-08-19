@@ -7,6 +7,11 @@
     --bg-column: #1e1e1e;
     --text-main: #f5f5f5;
     --text-muted: #a3a3a3;
+    --header-bg: #1e1e1e;
+    --header-text: #ffffff;
+    --header-btn-bg: rgba(255, 255, 255, 0.1);
+    --header-btn-hover: rgba(255, 255, 255, 0.2);
+    --header-btn-border: rgba(255, 255, 255, 0.3);
     --accent-primary: #4d7c0f; /* Scale 700 */
     --accent-success: #10b981;
     --accent-warning: #f59e0b;
@@ -30,12 +35,17 @@
 [data-theme="light"] {
     color-scheme: light;
     --bg-dark: #f8fafc;
-    --bg-agenda: #f8fafc;
+    --bg-agenda: #f8fafc; /* Cinza clarinho para o fundo da Agenda */
     --agenda-header-bg: #ffffff;
     --bg-card: #ffffff;
     --bg-column: #ffffff;
     --text-main: #334155;
     --text-muted: #64748b;
+    --header-bg: #ffffff;
+    --header-text: #334155;
+    --header-btn-bg: #f1f5f9;
+    --header-btn-hover: #e2e8f0;
+    --header-btn-border: #d1d5db;
     --accent-primary: #4d7c0f; /* Scale 700 */
     --accent-success: #059669;
     --accent-warning: #d97706;
@@ -85,8 +95,8 @@ body {
 
 /* Header */
 header {
-    background: #1e1e1e;
-    color: #ffffff;
+    background: var(--header-bg);
+    color: var(--header-text);
     backdrop-filter: blur(10px);
     padding: 0.6rem 1.5rem; /* Tamanho reduzido (antes 1rem 2rem) */
     display: flex;
@@ -99,17 +109,17 @@ header {
 }
 
 header h1, header .logo-text {
-    color: #ffffff;
+    color: var(--header-text);
 }
 
 header .btn-secondary {
-    color: #ffffff;
-    border-color: rgba(255, 255, 255, 0.3);
-    background: rgba(255, 255, 255, 0.1);
+    color: var(--header-text);
+    border-color: var(--header-btn-border);
+    background: var(--header-btn-bg);
 }
 
 header .btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--header-btn-hover);
 }
 
 /* Diminuir os botões dentro do header */
