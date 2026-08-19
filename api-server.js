@@ -17,6 +17,111 @@ if (!process.env.VERCEL) {
 
 app.get('/api/ping', (req, res) => res.send('pong3'));
 
+// ==========================================
+// WHATSAPP CLOUD API ROUTES
+// ==========================================
+
+// 1. Webhook Verification (Meta Challenge)
+app.get('/api/whatsapp/webhook', (req, res) => {
+    const verify_token = process.env.META_WA_VERIFY_TOKEN;
+    
+    let mode = req.query["hub.mode"];
+    let token = req.query["hub.verify_token"];
+    let challenge = req.query["hub.challenge"];
+
+    if (mode && token) {
+        if (mode === "subscribe" && token === verify_token) {
+            console.log("WEBHOOK_VERIFIED");
+            res.status(200).send(challenge);
+        } else {
+            res.sendStatus(403);
+        }
+    } else {
+        res.status(400).send("Bad Request");
+    }
+});
+
+// 2. Receive Messages from WhatsApp
+app.post('/api/whatsapp/webhook', (req, res) => {
+    let body = req.body;
+
+    console.log(JSON.stringify(body, null, 2));
+
+    if (body.object) {
+        if (
+            body.entry &&
+            body.entry[0].changes &&
+            body.entry[0].changes[0] &&
+            body.entry[0].changes[0].value.messages &&
+            body.entry[0].changes[0].value.messages[0]
+        ) {
+            let phone_number_id = body.entry[0].changes[0].value.metadata.phone_number_id;
+            let from = body.entry[0].changes[0].value.messages[0].from;
+            let msg_body = body.entry[0].changes[0].value.messages[0].text ? body.entry[0].changes[0].value.messages[0].text.body : "";
+
+            console.log(`Mensagem recebida de ${from}: ${msg_body}`);
+            // Aqui integraremos futuramente com o banco de dados e Socket.io
+        }
+        res.sendStatus(200);
+    } else {
+        res.sendStatus(404);
+    }
+});
+
+// 3. Send Message to WhatsApp
+app.post('/api/whatsapp/send', async (req, res) => {
+    const { to, message, isTemplate, templateName } = req.body;
+    
+    if (!to) {
+        return res.status(400).json({ error: "Número de destino (to) é obrigatório." });
+    }
+
+    const phone_id = process.env.META_WA_PHONE_ID;
+    const token = process.env.META_WA_ACCESS_TOKEN;
+    
+    if (!phone_id || !token) {
+        return res.status(500).json({ error: "Credenciais do WhatsApp não configuradas no servidor." });
+    }
+
+    try {
+        let data = {
+            messaging_product: "whatsapp",
+            to: to,
+        };
+
+        if (isTemplate) {
+            data.type = "template";
+            data.template = {
+                name: templateName || "hello_world",
+                language: { code: "en_US" }
+            };
+        } else {
+            data.type = "text";
+            data.text = { body: message };
+        }
+
+        const response = await fetch(`https://graph.facebook.com/v20.0/${phone_id}/messages`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.error ? result.error.message : "Erro desconhecido na Meta API");
+        }
+
+        res.status(200).json({ success: true, data: result });
+    } catch (error) {
+        console.error("Erro ao enviar mensagem WhatsApp:", error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Espelho da Rota Serverless para Listar Agenda (Local)
 app.get('/api/agenda', async (req, res) => {
     const AMIGO_API_TOKEN = process.env.AMIGO_API_TOKEN;
