@@ -749,3 +749,101 @@ select.form-control option {
     color: white;
     border-color: var(--accent-primary);
 }
+
+/* ==========================================
+   CHAT WHATSAPP STYLES
+   ========================================== */
+
+.chat-contact-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.chat-contact-item:hover {
+    background: var(--bg-hover);
+}
+
+.chat-contact-item.active {
+    background: var(--bg-column);
+    border-left: 4px solid var(--accent-success);
+}
+
+.chat-contact-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.chat-contact-info {
+    flex: 1;
+    overflow: hidden;
+}
+
+.chat-contact-name {
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-contact-preview {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-bubble {
+    max-width: 75%;
+    padding: 0.8rem 1rem;
+    border-radius: 12px;
+    position: relative;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.chat-bubble-out {
+    background: var(--accent-success);
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+}
+
+.chat-bubble-in {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+}
+
+.chat-bubble-time {
+    font-size: 0.7rem;
+    opacity: 0.8;
+    margin-top: 0.3rem;
+    text-align: right;
+    display: block;
+}
+
+.chat-bubble-out .chat-bubble-time {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.chat-bubble-in .chat-bubble-time {
+    color: var(--text-muted);
+}
+

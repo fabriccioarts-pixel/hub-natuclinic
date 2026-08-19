@@ -856,6 +856,14 @@ function switchTab(tabId) {
     
     document.getElementById('view-kanban').style.display = 'none';
     document.getElementById('view-agenda').style.display = 'none';
+    const chatView = document.getElementById('view-chat');
+    if(chatView) chatView.style.display = 'none';
+    
+    // Para polling do chat ao sair da aba
+    if (tabId !== 'chat' && window.chatPollingInterval) {
+        clearInterval(window.chatPollingInterval);
+        window.chatPollingInterval = null;
+    }
     
     ['posvenda', 'faltantes', 'sumidos', 'aniversariantes'].forEach(t => {
         const el = document.getElementById(`view-${t}`);
@@ -867,6 +875,23 @@ function switchTab(tabId) {
     } else if (tabId === 'agenda') {
         document.getElementById('view-agenda').style.display = 'flex';
         renderAgendaGrid();
+    } else if (tabId === 'chat') {
+        const view = document.getElementById('view-chat');
+        if (view) {
+            view.style.display = 'flex';
+            loadChats();
+            // Inicia polling se ainda não estiver rodando
+            if (!window.chatPollingInterval) {
+                window.chatPollingInterval = setInterval(() => {
+                    if(document.getElementById('view-chat').style.display !== 'none') {
+                        loadChats(true);
+                        if(window.currentActiveChat) {
+                            openChat(window.currentActiveChat.phone, window.currentActiveChat.name, true);
+                        }
+                    }
+                }, 5000);
+            }
+        }
     } else if (['posvenda', 'faltantes', 'sumidos', 'aniversariantes'].includes(tabId)) {
         const view = document.getElementById(`view-${tabId}`);
         if (view) {

@@ -42,7 +42,7 @@ app.get('/api/whatsapp/webhook', (req, res) => {
 });
 
 // 2. Receive Messages from WhatsApp
-app.post('/api/whatsapp/webhook', (req, res) => {
+app.post('/api/whatsapp/webhook', async (req, res) => {
     let body = req.body;
 
     console.log(JSON.stringify(body, null, 2));
@@ -55,12 +55,21 @@ app.post('/api/whatsapp/webhook', (req, res) => {
             body.entry[0].changes[0].value.messages &&
             body.entry[0].changes[0].value.messages[0]
         ) {
-            let phone_number_id = body.entry[0].changes[0].value.metadata.phone_number_id;
-            let from = body.entry[0].changes[0].value.messages[0].from;
-            let msg_body = body.entry[0].changes[0].value.messages[0].text ? body.entry[0].changes[0].value.messages[0].text.body : "";
+            let message_obj = body.entry[0].changes[0].value.messages[0];
+            let from = message_obj.from;
+            let msg_id = message_obj.id;
+            let msg_body = message_obj.text ? message_obj.text.body : "";
 
             console.log(`Mensagem recebida de ${from}: ${msg_body}`);
-            // Aqui integraremos futuramente com o banco de dados e Socket.io
+            
+            try {
+                await queryD1(
+                    'INSERT INTO wa_messages (id, phone, direction, message, status) VALUES (?, ?, ?, ?, ?)',
+                    [msg_id, from, 'in', msg_body, 'received']
+                );
+            } catch(e) {
+                console.error("Erro ao salvar mensagem no DB:", e);
+            }
         }
         res.sendStatus(200);
     } else {
@@ -115,10 +124,48 @@ app.post('/api/whatsapp/send', async (req, res) => {
             throw new Error(result.error ? result.error.message : "Erro desconhecido na Meta API");
         }
 
+        try {
+            let msg_id = result.messages ? result.messages[0].id : Date.now().toString();
+            let msg_body = isTemplate ? `[Template: ${templateName}]` : message;
+            
+            await queryD1(
+                'INSERT INTO wa_messages (id, phone, direction, message, status) VALUES (?, ?, ?, ?, ?)',
+                [msg_id, to, 'out', msg_body, 'sent']
+            );
+        } catch(e) {
+            console.error("Erro ao salvar mensagem enviada no DB:", e);
+        }
+
         res.status(200).json({ success: true, data: result });
     } catch (error) {
         console.error("Erro ao enviar mensagem WhatsApp:", error.message);
         res.status(500).json({ error: error.message });
+    }
+});
+
+// 4. Listar Chats Recentes (Contatos)
+app.get('/api/whatsapp/chats', async (req, res) => {
+    try {
+        const rows = await queryD1(`
+            SELECT phone, MAX(timestamp) as last_interaction, message, direction 
+            FROM wa_messages 
+            GROUP BY phone 
+            ORDER BY last_interaction DESC
+        `);
+        res.json({ success: true, data: rows });
+    } catch(e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// 5. Histórico de Conversa de um Número
+app.get('/api/whatsapp/chat/:phone', async (req, res) => {
+    try {
+        const { phone } = req.params;
+        const rows = await queryD1('SELECT * FROM wa_messages WHERE phone = ? ORDER BY timestamp ASC', [phone]);
+        res.json({ success: true, data: rows });
+    } catch(e) {
+        res.status(500).json({ error: e.message });
     }
 });
 
@@ -253,6 +300,17 @@ app.get('/api/buscar-paciente', async (req, res) => {
 // Inicializar Tabelas
 app.post('/api/init-db', async (req, res) => {
     try {
+        await queryD1(`
+            CREATE TABLE IF NOT EXISTS wa_messages (
+                id TEXT PRIMARY KEY,
+                phone TEXT NOT NULL,
+                direction TEXT NOT NULL,
+                message TEXT,
+                status TEXT,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
         await queryD1(`
             CREATE TABLE IF NOT EXISTS mensagens_enviadas (
                 id TEXT PRIMARY KEY,
