@@ -406,6 +406,8 @@ function openNotesModal(id) {
     document.getElementById('ln-lead-phone').value = lead.telefone || '';
     document.getElementById('ln-lead-born').value = lead.born || '';
     document.getElementById('ln-lead-email').value = lead.email || '';
+    document.getElementById('ln-lead-fb-click').value = lead.fb_click_id || '';
+    document.getElementById('ln-lead-origem').value = lead.origem || 'Meta Ads';
     document.getElementById('ln-notas').value = lead.notas || '';
     document.getElementById('modalLeadNotes').classList.add('active');
 }
@@ -416,6 +418,8 @@ async function saveLeadNotes() {
     const telefone = document.getElementById('ln-lead-phone').value;
     const born = document.getElementById('ln-lead-born').value;
     const email = document.getElementById('ln-lead-email').value;
+    const fb_click_id = document.getElementById('ln-lead-fb-click').value;
+    const origem = document.getElementById('ln-lead-origem').value;
     const notas = document.getElementById('ln-notas').value;
     
     const lead = leads.find(l => l.id === id);
@@ -424,6 +428,8 @@ async function saveLeadNotes() {
         lead.telefone = telefone;
         lead.born = born;
         lead.email = email;
+        lead.fb_click_id = fb_click_id;
+        lead.origem = origem;
         lead.notas = notas;
         renderBoard(); // atualiza a cor do icone de notas e os dados no card
         
