@@ -1490,10 +1490,10 @@ async function renderAgendaGrid() {
                     
                     if (att.canceled || att.status === 'canceled') {
                         statusIcon = '<i class="fa-solid fa-ban" style="color: #ef4444;" title="Cancelado"></i>';
-                        extraStyles = 'opacity: 0.5; text-decoration: line-through; border: 1px solid #ef4444;';
+                        extraStyles += ' opacity: 0.5; text-decoration: line-through; border: 1px solid #ef4444;';
                     } else if (att.missed) {
                         statusIcon = '<i class="fa-solid fa-user-xmark" style="color: #f97316;" title="Faltou"></i>';
-                        extraStyles = 'opacity: 0.6;';
+                        extraStyles += ' opacity: 0.6;';
                     } else if (att.done || att.status === 'done') {
                         statusIcon = '<i class="fa-solid fa-check-double" style="color: #10b981;" title="Finalizado"></i>';
                     } else if (att.arrived || att.in_attendance || att.status === 'arrived' || att.status === 'in_attendance') {
