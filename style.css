@@ -195,13 +195,14 @@ th { background-color: var(--secondary-color); font-weight: 500; }
     gap: 0.4rem; /* Gap menor */
 }
 
-/* Abas na barra principal (Fundo Terracota) */
+/* Abas na barra principal */
 .tabs-container > .tab-btn, .tabs-container > .dropdown > .tab-btn {
-    color: rgba(255, 255, 255, 0.75);
+    color: var(--header-text);
+    opacity: 0.8;
 }
 
 .tabs-container > .tab-btn:hover, .tabs-container > .dropdown > .tab-btn:hover { 
-    color: #ffffff; 
+    opacity: 1;
 }
 
 .dropdown-content .tab-btn:hover {
