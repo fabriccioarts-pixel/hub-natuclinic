@@ -60,15 +60,35 @@ app.post('/api/whatsapp/webhook', async (req, res) => {
             let msg_id = message_obj.id;
             let msg_body = message_obj.text ? message_obj.text.body : "";
 
+            // Extrai o nome do perfil do WhatsApp
+            let profileName = "Lead WhatsApp";
+            if (body.entry[0].changes[0].value.contacts && body.entry[0].changes[0].value.contacts[0]) {
+                profileName = body.entry[0].changes[0].value.contacts[0].profile?.name || profileName;
+            }
+
             console.log(`Mensagem recebida de ${from}: ${msg_body}`);
             
             try {
+                // 1. Salva a mensagem no histórico do chat
                 await queryD1(
                     'INSERT INTO wa_messages (id, phone, direction, message, status) VALUES (?, ?, ?, ?, ?)',
                     [msg_id, from, 'in', msg_body, 'received']
                 );
+
+                // 2. Verifica se o lead já existe no Kanban (busca exata ou parcial)
+                const leadRows = await queryD1('SELECT id FROM leads WHERE telefone LIKE ? OR telefone = ?', [`%${from}%`, from]);
+
+                // 3. Se não existe, cria um novo Lead no Kanban na coluna Novos
+                if (!leadRows || leadRows.length === 0) {
+                    const newLeadId = Date.now().toString();
+                    await queryD1(
+                        'INSERT INTO leads (id, nome, telefone, origem, born, owner_id, column_id, fb_click_id, email, notas) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                        [newLeadId, profileName, from, 'WhatsApp Orgânico', '', '', 'col-novos', '', '', '']
+                    );
+                    console.log(`Novo lead criado a partir do WhatsApp: ${profileName} (${from})`);
+                }
             } catch(e) {
-                console.error("Erro ao salvar mensagem no DB:", e);
+                console.error("Erro ao processar webhook no DB:", e);
             }
         }
         res.sendStatus(200);
