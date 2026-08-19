@@ -10,8 +10,10 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
-// Serve a pasta atual como arquivos estáticos (Frontend)
-app.use(express.static(process.cwd()));
+// Serve a pasta atual como arquivos estáticos (Frontend) apenas localmente
+if (!process.env.VERCEL) {
+    app.use(express.static(process.cwd()));
+}
 
 app.get('/api/ping', (req, res) => res.send('pong3'));
 
