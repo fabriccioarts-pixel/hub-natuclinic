@@ -667,21 +667,40 @@
         </div>
     </div>
 
-    <!-- Modal Notas do Lead -->
+    <!-- Modal Editar Lead -->
     <div class="modal-overlay" id="modalLeadNotes">
         <div class="modal">
-            <h2><i class="fa-solid fa-note-sticky" style="color: var(--accent-warning)"></i> Notas do Lead</h2>
+            <h2><i class="fa-solid fa-user-pen" style="color: var(--accent-warning)"></i> Editar Lead</h2>
             
             <input type="hidden" id="ln-lead-id">
             
             <div class="form-group">
-                <label id="ln-lead-name" style="font-weight: 600; font-size: 1.1rem; color: var(--text-main); margin-bottom: 0.5rem; display: block;">Nome do Lead</label>
-                <textarea id="ln-notas" class="form-control" style="height: 150px; resize: vertical;" placeholder="Escreva observações, histórico de conversas ou detalhes importantes..."></textarea>
+                <label>Nome do Paciente</label>
+                <input type="text" id="ln-lead-name" class="form-control" placeholder="Desconhecido">
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <div class="form-group" style="flex: 1;">
+                    <label>Telefone (WhatsApp)</label>
+                    <input type="text" id="ln-lead-phone" class="form-control" placeholder="(61) 99999-9999">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Data de Nascimento</label>
+                    <input type="date" id="ln-lead-born" class="form-control">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>E-mail</label>
+                <input type="email" id="ln-lead-email" class="form-control" placeholder="email@exemplo.com">
+            </div>
+            
+            <div class="form-group">
+                <label style="font-weight: 600; font-size: 1rem; color: var(--text-main); margin-bottom: 0.5rem; display: block;">Notas do Lead</label>
+                <textarea id="ln-notas" class="form-control" style="height: 100px; resize: vertical;" placeholder="Escreva observações, histórico de conversas ou detalhes importantes..."></textarea>
             </div>
             
             <div class="modal-actions">
                 <button class="btn-cancel" onclick="closeModals()">Cancelar</button>
-                <button class="btn-save" onclick="saveLeadNotes()"><i class="fa-solid fa-save"></i> Salvar Notas</button>
+                <button class="btn-save" onclick="saveLeadNotes()"><i class="fa-solid fa-save"></i> Salvar</button>
             </div>
         </div>
     </div>

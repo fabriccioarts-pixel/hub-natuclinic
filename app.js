@@ -402,28 +402,39 @@ function openNotesModal(id) {
     const lead = leads.find(l => l.id === id);
     if (!lead) return;
     document.getElementById('ln-lead-id').value = id;
-    document.getElementById('ln-lead-name').innerText = lead.nome;
+    document.getElementById('ln-lead-name').value = lead.nome || '';
+    document.getElementById('ln-lead-phone').value = lead.telefone || '';
+    document.getElementById('ln-lead-born').value = lead.born || '';
+    document.getElementById('ln-lead-email').value = lead.email || '';
     document.getElementById('ln-notas').value = lead.notas || '';
     document.getElementById('modalLeadNotes').classList.add('active');
 }
 
 async function saveLeadNotes() {
     const id = document.getElementById('ln-lead-id').value;
+    const nome = document.getElementById('ln-lead-name').value;
+    const telefone = document.getElementById('ln-lead-phone').value;
+    const born = document.getElementById('ln-lead-born').value;
+    const email = document.getElementById('ln-lead-email').value;
     const notas = document.getElementById('ln-notas').value;
     
     const lead = leads.find(l => l.id === id);
     if (lead) {
+        lead.nome = nome || 'Desconhecido';
+        lead.telefone = telefone;
+        lead.born = born;
+        lead.email = email;
         lead.notas = notas;
-        renderBoard(); // atualiza a cor do icone de notas
+        renderBoard(); // atualiza a cor do icone de notas e os dados no card
         
         try {
             await fetch(`/api/leads/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ notas })
+                body: JSON.stringify({ nome: lead.nome, telefone, born, email, notas })
             });
         } catch (e) {
-            console.error('Erro ao salvar notas', e);
+            console.error('Erro ao salvar edições', e);
         }
     }
     

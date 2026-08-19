@@ -391,17 +391,44 @@ app.post('/api/leads', async (req, res) => {
 // Atualizar dados de um lead (coluna e/ou notas)
 app.put('/api/leads/:id', async (req, res) => {
     const { id } = req.params;
-    const { column_id, notas } = req.body;
+    const { column_id, notas, nome, telefone, born, email } = req.body;
     try {
         const leadRows = await queryD1('SELECT * FROM leads WHERE id = ?', [id]);
         const lead = leadRows && leadRows.length > 0 ? leadRows[0] : null;
+        
+        if (!lead) return res.status(404).json({ error: 'Lead não encontrado' });
 
-        if (column_id !== undefined && notas !== undefined) {
-            await queryD1('UPDATE leads SET column_id = ?, notas = ? WHERE id = ?', [column_id || 'col-novos', notas, id]);
-        } else if (column_id !== undefined) {
-            await queryD1('UPDATE leads SET column_id = ? WHERE id = ?', [column_id || 'col-novos', id]);
-        } else if (notas !== undefined) {
-            await queryD1('UPDATE leads SET notas = ? WHERE id = ?', [notas, id]);
+        const updates = [];
+        const params = [];
+
+        if (column_id !== undefined) {
+            updates.push('column_id = ?');
+            params.push(column_id || 'col-novos');
+        }
+        if (notas !== undefined) {
+            updates.push('notas = ?');
+            params.push(notas);
+        }
+        if (nome !== undefined) {
+            updates.push('nome = ?');
+            params.push(nome);
+        }
+        if (telefone !== undefined) {
+            updates.push('telefone = ?');
+            params.push(telefone);
+        }
+        if (born !== undefined) {
+            updates.push('born = ?');
+            params.push(born);
+        }
+        if (email !== undefined) {
+            updates.push('email = ?');
+            params.push(email);
+        }
+
+        if (updates.length > 0) {
+            params.push(id);
+            await queryD1(`UPDATE leads SET ${updates.join(', ')} WHERE id = ?`, params);
         }
 
         if (column_id === 'col-atendimento' && lead) {
