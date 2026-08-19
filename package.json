@@ -4,7 +4,7 @@
   "description": "CRM da Clínica - Vercel Ready & Local Dev",
   "type": "module",
   "scripts": {
-    "dev": "node server.js"
+    "dev": "node api-server.js"
   },
   "dependencies": {
     "cors": "^2.8.6",
