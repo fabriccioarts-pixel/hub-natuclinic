@@ -695,11 +695,11 @@ select.form-control option {
     position: absolute;
     top: 100%;
     left: 0;
+    width: 100%;
     background-color: var(--bg-card);
-    min-width: 200px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 100;
-    border-radius: 0 8px 8px 8px;
+    border-radius: 0 0 8px 8px;
     overflow: hidden;
     border: 1px solid var(--border-color);
 }
@@ -710,7 +710,8 @@ select.form-control option {
 .dropdown-content .tab-btn {
     margin: 0;
     border-radius: 0;
-    padding: 0.8rem 1rem;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.85rem;
     width: 100%;
     justify-content: flex-start;
     border-bottom: 1px solid var(--border-color);
