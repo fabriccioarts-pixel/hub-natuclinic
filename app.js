@@ -193,7 +193,7 @@ function renderBoard() {
 
             card.innerHTML = `
                 <button class="delete-btn" onclick="deleteLead('${lead.id}')"><i class="fa-solid fa-trash"></i></button>
-                <button class="notes-btn" onclick="openNotesModal('${lead.id}')" style="position: absolute; right: 35px; top: 10px; background: none; border: none; color: ${lead.notas ? 'var(--accent-warning)' : 'var(--text-muted)'}; cursor: pointer; font-size: 1.1rem; transition: 0.2s;" onmouseover="this.style.color='var(--accent-warning)'" onmouseout="this.style.color='${lead.notas ? 'var(--accent-warning)' : 'var(--text-muted)'}'" title="Anotações do Lead"><i class="fa-solid fa-note-sticky"></i></button>
+                <button class="notes-btn" onclick="openNotesModal('${lead.id}')" style="position: absolute; right: 35px; top: 10px; background: none; border: none; color: ${lead.notas ? 'var(--accent-warning)' : 'var(--text-muted)'}; cursor: pointer; font-size: 1.1rem; transition: 0.2s;" onmouseover="this.style.color='var(--accent-warning)'" onmouseout="this.style.color='${lead.notas ? 'var(--accent-warning)' : 'var(--text-muted)'}'" title="Editar Lead e Notas"><i class="fa-solid fa-pen-to-square"></i></button>
                 <div class="card-title">${lead.nome}</div>
                 <div class="card-info"><i class="fa-brands fa-whatsapp"></i> ${lead.telefone}</div>
                 <div class="tag"><i class="fa-solid fa-bullhorn"></i> ${lead.origem}</div>
