@@ -85,7 +85,7 @@ body {
 
 /* Header */
 header {
-    background: var(--accent-primary);
+    background: #1e1e1e;
     color: #ffffff;
     backdrop-filter: blur(10px);
     padding: 0.6rem 1.5rem; /* Tamanho reduzido (antes 1rem 2rem) */
