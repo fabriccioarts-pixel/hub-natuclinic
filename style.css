@@ -7,7 +7,7 @@
     --bg-column: #1e1e1e;
     --text-main: #f5f5f5;
     --text-muted: #a3a3a3;
-    --accent-primary: #ca3500; /* Scale 700 */
+    --accent-primary: #4d7c0f; /* Scale 700 */
     --accent-success: #10b981;
     --accent-warning: #f59e0b;
     --accent-danger: #ef4444;
@@ -16,14 +16,14 @@
     --btn-secondary-hover: #3a3a3a;
     --btn-secondary-text: #ffffff;
     
-    /* Agenda Colors - Dark Mode (Muted, Dark Solid Colors - Terracotta Scale) */
-    --agenda-c1-bg: #441306; --agenda-c1-border: #7e2a0c; --agenda-c1-text: #ffedd4; /* 950 / 900 / 100 */
-    --agenda-c2-bg: #7e2a0c; --agenda-c2-border: #9f2d00; --agenda-c2-text: #fff7ed; /* 900 / 800 / 50 */
-    --agenda-c3-bg: #9f2d00; --agenda-c3-border: #ca3500; --agenda-c3-text: #ffedd4; /* 800 / 700 / 100 */
-    --agenda-c4-bg: #441306; --agenda-c4-border: #9f2d00; --agenda-c4-text: #ffd6a8; /* 950 / 800 / 200 */
-    --agenda-c5-bg: #7e2a0c; --agenda-c5-border: #ca3500; --agenda-c5-text: #ffd6a8; /* 900 / 700 / 200 */
-    --agenda-c6-bg: #441306; --agenda-c6-border: #ca3500; --agenda-c6-text: #fff7ed; /* 950 / 700 / 50 */
-    --agenda-c7-bg: #9f2d00; --agenda-c7-border: #7e2a0c; --agenda-c7-text: #ffb86a; /* 800 / 900 / 300 */
+    /* Agenda Colors - Dark Mode (Muted, Dark Solid Colors - Lime Scale) */
+    --agenda-c1-bg: #1a2e05; --agenda-c1-border: #365314; --agenda-c1-text: #ecfccb; /* 950 / 900 / 100 */
+    --agenda-c2-bg: #365314; --agenda-c2-border: #3f6212; --agenda-c2-text: #f7fee7; /* 900 / 800 / 50 */
+    --agenda-c3-bg: #3f6212; --agenda-c3-border: #4d7c0f; --agenda-c3-text: #ecfccb; /* 800 / 700 / 100 */
+    --agenda-c4-bg: #1a2e05; --agenda-c4-border: #3f6212; --agenda-c4-text: #d9f99d; /* 950 / 800 / 200 */
+    --agenda-c5-bg: #365314; --agenda-c5-border: #4d7c0f; --agenda-c5-text: #d9f99d; /* 900 / 700 / 200 */
+    --agenda-c6-bg: #1a2e05; --agenda-c6-border: #4d7c0f; --agenda-c6-text: #f7fee7; /* 950 / 700 / 50 */
+    --agenda-c7-bg: #3f6212; --agenda-c7-border: #365314; --agenda-c7-text: #bef264; /* 800 / 900 / 300 */
     --agenda-block-bg: #262626; --agenda-block-border: #525252; --agenda-block-text: #d4d4d4;
 }
 
@@ -36,7 +36,7 @@
     --bg-column: #ffffff;
     --text-main: #334155;
     --text-muted: #64748b;
-    --accent-primary: #ca3500; /* Scale 700 */
+    --accent-primary: #4d7c0f; /* Scale 700 */
     --accent-success: #059669;
     --accent-warning: #d97706;
     --accent-danger: #dc2626;
@@ -45,14 +45,14 @@
     --btn-secondary-hover: #e2e8f0;
     --btn-secondary-text: #475569;
 
-    /* Agenda Colors - Light Mode (Pastel, Light Solid Colors - Terracotta Scale) */
-    --agenda-c1-bg: #fff7ed; --agenda-c1-border: #ffd6a8; --agenda-c1-text: #9f2d00; /* 50 / 200 / 800 */
-    --agenda-c2-bg: #ffedd4; --agenda-c2-border: #ffb86a; --agenda-c2-text: #7e2a0c; /* 100 / 300 / 900 */
-    --agenda-c3-bg: #ffd6a8; --agenda-c3-border: #ca3500; --agenda-c3-text: #441306; /* 200 / 700 / 950 */
-    --agenda-c4-bg: #ffb86a; --agenda-c4-border: #9f2d00; --agenda-c4-text: #441306; /* 300 / 800 / 950 */
-    --agenda-c5-bg: #fff7ed; --agenda-c5-border: #ffb86a; --agenda-c5-text: #ca3500; /* 50 / 300 / 700 */
-    --agenda-c6-bg: #ffedd4; --agenda-c6-border: #ffd6a8; --agenda-c6-text: #9f2d00; /* 100 / 200 / 800 */
-    --agenda-c7-bg: #ffd6a8; --agenda-c7-border: #ffb86a; --agenda-c7-text: #7e2a0c; /* 200 / 300 / 900 */
+    /* Agenda Colors - Light Mode (Pastel, Light Solid Colors - Lime Scale) */
+    --agenda-c1-bg: #f7fee7; --agenda-c1-border: #d9f99d; --agenda-c1-text: #3f6212; /* 50 / 200 / 800 */
+    --agenda-c2-bg: #ecfccb; --agenda-c2-border: #bef264; --agenda-c2-text: #365314; /* 100 / 300 / 900 */
+    --agenda-c3-bg: #d9f99d; --agenda-c3-border: #4d7c0f; --agenda-c3-text: #1a2e05; /* 200 / 700 / 950 */
+    --agenda-c4-bg: #bef264; --agenda-c4-border: #3f6212; --agenda-c4-text: #1a2e05; /* 300 / 800 / 950 */
+    --agenda-c5-bg: #f7fee7; --agenda-c5-border: #bef264; --agenda-c5-text: #4d7c0f; /* 50 / 300 / 700 */
+    --agenda-c6-bg: #ecfccb; --agenda-c6-border: #d9f99d; --agenda-c6-text: #3f6212; /* 100 / 200 / 800 */
+    --agenda-c7-bg: #d9f99d; --agenda-c7-border: #bef264; --agenda-c7-text: #365314; /* 200 / 300 / 900 */
     --agenda-block-bg: #e5e5e5; --agenda-block-border: #737373; --agenda-block-text: #171717;
 }
 
@@ -199,7 +199,7 @@ th { background-color: var(--secondary-color); font-weight: 500; }
 }
 
 .tab-btn.active {
-    background: #9f2d00; /* Terracota Escuro */
+    background: #3f6212; /* Lime 800 */
     color: white !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
@@ -215,7 +215,7 @@ th { background-color: var(--secondary-color); font-weight: 500; }
 .logo h1 i { color: var(--accent-primary); }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--accent-primary), #9f2d00);
+    background: linear-gradient(135deg, var(--accent-primary), #3f6212);
     color: white;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -226,11 +226,11 @@ th { background-color: var(--secondary-color); font-weight: 500; }
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    box-shadow: 0 4px 12px rgba(202, 53, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(77, 124, 15, 0.3);
 }
 
 .btn-primary:hover {
-    box-shadow: 0 6px 16px rgba(202, 53, 0, 0.4);
+    box-shadow: 0 6px 16px rgba(77, 124, 15, 0.4);
 }
 
 .btn-secondary {
@@ -365,15 +365,15 @@ th { background-color: var(--secondary-color); font-weight: 500; }
     font-size: 0.75rem;
     padding: 0.2rem 0.5rem;
     border-radius: 4px;
-    background: rgba(202, 53, 0, 0.15);
-    color: #ca3500;
+    background: rgba(77, 124, 15, 0.15);
+    color: #4d7c0f;
     margin-top: 0.5rem;
 }
 
 .card .tag {
     background: transparent !important;
     padding: 0;
-    color: #ca3500 !important;
+    color: #4d7c0f !important;
     font-weight: 500;
     display: inline-flex;
     align-items: center;
@@ -471,7 +471,7 @@ th { background-color: var(--secondary-color); font-weight: 500; }
 
 .form-group input:focus, .form-control:focus {
     border-color: var(--accent-primary);
-    box-shadow: 0 0 0 2px rgba(202, 53, 0, 0.25);
+    box-shadow: 0 0 0 2px rgba(77, 124, 15, 0.25);
     outline: none;
 }
 
