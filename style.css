@@ -563,10 +563,7 @@ select.form-control option {
 .agenda-block:hover { z-index: 999 !important; transform: scale(1.02); opacity: 1 !important; }
 .agenda-block strong { display: block; margin-bottom: 0.2rem; }
 
-/* Cores específicas baseadas no screenshot */
-.block-estetica { background: #fce7f3; border: 1px solid #fbcfe8; border-left: 4px solid #ec4899; color: #500724; } /* Rosa Pastel */
-.block-enfermagem { background: #ffe4e6; border: 1px solid #fecdd3; border-left: 4px solid #f43f5e; color: #4c0519; } /* Nude / Rose Suave */
-.block-bloqueado { background: #f5e6d3; border: 1px solid #eaddcf; border-left: 4px solid #a16207; color: #451a03; } /* Bege / Marrom Claro */
+/* As cores dos blocos agora são geradas dinamicamente via JavaScript em app.js */
 
 .relacionamento-grid {
     display: grid;
