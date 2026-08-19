@@ -441,10 +441,21 @@ async function saveLeadNotes() {
     document.getElementById('modalLeadNotes').classList.remove('active');
 }
 
-function deleteLead(id) {
+async function deleteLead(id) {
     if(confirm("Tem certeza que deseja deletar este paciente?")) {
-        leads = leads.filter(l => l.id !== id);
-        renderBoard();
+        try {
+            const res = await fetch(`/api/leads/${id}`, { method: 'DELETE' });
+            const json = await res.json();
+            if (json.success) {
+                leads = leads.filter(l => l.id !== id);
+                renderBoard();
+            } else {
+                alert("Erro ao deletar: " + (json.error || "Desconhecido"));
+            }
+        } catch (e) {
+            console.error("Erro ao deletar lead", e);
+            alert("Erro ao deletar o lead.");
+        }
     }
 }
 

@@ -443,6 +443,17 @@ app.put('/api/leads/:id', async (req, res) => {
     }
 });
 
+// Deletar um lead
+app.delete('/api/leads/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await queryD1('DELETE FROM leads WHERE id = ?', [id]);
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // Nova Rota Local para buscar Opções Dinâmicas (Serviços, Médicos, Locais)
 app.get('/api/options', async (req, res) => {
     const AMIGO_API_TOKEN = process.env.AMIGO_API_TOKEN;
