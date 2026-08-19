@@ -13,6 +13,16 @@
     --btn-secondary-bg: #334155;
     --btn-secondary-hover: #475569;
     --btn-secondary-text: #ffffff;
+    
+    /* Agenda Colors - Dark Mode (Muted, Dark Solid Colors) */
+    --agenda-c1-bg: #4a044e; --agenda-c1-border: #db2777; --agenda-c1-text: #fbcfe8;
+    --agenda-c2-bg: #500724; --agenda-c2-border: #ec4899; --agenda-c2-text: #fce7f3;
+    --agenda-c3-bg: #4c0519; --agenda-c3-border: #f43f5e; --agenda-c3-text: #ffe4e6;
+    --agenda-c4-bg: #431407; --agenda-c4-border: #ea580c; --agenda-c4-text: #ffedd5;
+    --agenda-c5-bg: #451a03; --agenda-c5-border: #d97706; --agenda-c5-text: #fef3c7;
+    --agenda-c6-bg: #3f2a14; --agenda-c6-border: #a16207; --agenda-c6-text: #f5e6d3;
+    --agenda-c7-bg: #292524; --agenda-c7-border: #78716c; --agenda-c7-text: #e7e5e4;
+    --agenda-block-bg: #262626; --agenda-block-border: #525252; --agenda-block-text: #d4d4d4;
 }
 
 [data-theme="light"] {
@@ -30,6 +40,16 @@
     --btn-secondary-bg: #f1f5f9;
     --btn-secondary-hover: #e2e8f0;
     --btn-secondary-text: #475569;
+
+    /* Agenda Colors - Light Mode (Pastel, Light Solid Colors) */
+    --agenda-c1-bg: #fdf2f8; --agenda-c1-border: #db2777; --agenda-c1-text: #831843;
+    --agenda-c2-bg: #fce7f3; --agenda-c2-border: #ec4899; --agenda-c2-text: #500724;
+    --agenda-c3-bg: #ffe4e6; --agenda-c3-border: #f43f5e; --agenda-c3-text: #4c0519;
+    --agenda-c4-bg: #ffedd5; --agenda-c4-border: #ea580c; --agenda-c4-text: #7c2d12;
+    --agenda-c5-bg: #fef3c7; --agenda-c5-border: #d97706; --agenda-c5-text: #78350f;
+    --agenda-c6-bg: #f5e6d3; --agenda-c6-border: #a16207; --agenda-c6-text: #451a03;
+    --agenda-c7-bg: #e7e5e4; --agenda-c7-border: #78716c; --agenda-c7-text: #1c1917;
+    --agenda-block-bg: #e5e5e5; --agenda-block-border: #737373; --agenda-block-text: #171717;
 }
 
 * {

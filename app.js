@@ -1462,31 +1462,31 @@ async function renderAgendaGrid() {
                     const endTimeStr = `${endHour.toString().padStart(2,'0')}:${endMin.toString().padStart(2,'0')}`;
                     const timeText = `${startTimeStr} - ${endTimeStr}`;
                     
-                    // Gerar cor dinâmica baseada no nome do procedimento (tons pastéis de rosa a marrom)
-                    const palette = [
-                        { bg: '#fdf2f8', border: '#db2777', color: '#831843' }, // Rosa Claro
-                        { bg: '#fce7f3', border: '#ec4899', color: '#500724' }, // Rosa Pastel
-                        { bg: '#ffe4e6', border: '#f43f5e', color: '#4c0519' }, // Rose Salmão
-                        { bg: '#ffedd5', border: '#ea580c', color: '#7c2d12' }, // Pêssego
-                        { bg: '#fef3c7', border: '#d97706', color: '#78350f' }, // Dourado Pastel
-                        { bg: '#f5e6d3', border: '#a16207', color: '#451a03' }, // Bege
-                        { bg: '#e7e5e4', border: '#78716c', color: '#1c1917' }  // Cinza Neutro
+                    // Gerar cor dinâmica baseada no nome do procedimento via Variáveis CSS (Suporta Tema Claro e Escuro)
+                    const paletteVars = [
+                        { var: 'c1' }, // Rosa Claro
+                        { var: 'c2' }, // Rosa Pastel
+                        { var: 'c3' }, // Rose Salmão
+                        { var: 'c4' }, // Pêssego
+                        { var: 'c5' }, // Dourado Pastel
+                        { var: 'c6' }, // Bege
+                        { var: 'c7' }  // Cinza Neutro
                     ];
                     
-                    let colorObj = palette[0];
+                    let colorVar = paletteVars[0].var;
                     if (title.toLowerCase().includes('bloqueio')) {
-                        colorObj = { bg: '#e5e5e5', border: '#737373', color: '#171717' }; // Cinza escuro para bloqueios
+                        colorVar = 'block'; // Usar variáveis de bloqueio
                     } else {
                         let hash = 0;
                         for (let i = 0; i < title.length; i++) {
                             hash = title.charCodeAt(i) + ((hash << 5) - hash);
                         }
                         hash = Math.abs(hash);
-                        colorObj = palette[hash % palette.length];
+                        colorVar = paletteVars[hash % paletteVars.length].var;
                     }
                     
                     let statusIcon = '<i class="fa-regular fa-clock" title="Agendado"></i>';
-                    let extraStyles = `background: ${colorObj.bg}; border: 1px solid ${colorObj.border}; border-left: 4px solid ${colorObj.border}; color: ${colorObj.color};`;
+                    let extraStyles = `background: var(--agenda-${colorVar}-bg); border: 1px solid var(--agenda-${colorVar}-border); border-left: 4px solid var(--agenda-${colorVar}-border); color: var(--agenda-${colorVar}-text);`;
                     
                     if (att.canceled || att.status === 'canceled') {
                         statusIcon = '<i class="fa-solid fa-ban" style="color: #ef4444;" title="Cancelado"></i>';
