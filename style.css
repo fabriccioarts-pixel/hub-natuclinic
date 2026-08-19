@@ -1,6 +1,8 @@
 :root {
     color-scheme: dark;
     --bg-dark: #0f172a;
+    --bg-agenda: #1c1c1c; /* Cinza Escuro para o fundo da Agenda */
+    --agenda-header-bg: #262626; /* Cinza para os cabeçalhos e horários da agenda */
     --bg-card: #1e293b;
     --bg-column: #1e293b;
     --text-main: #f8fafc;
@@ -28,6 +30,8 @@
 [data-theme="light"] {
     color-scheme: light;
     --bg-dark: #f8fafc;
+    --bg-agenda: #f8fafc;
+    --agenda-header-bg: #ffffff;
     --bg-card: #ffffff;
     --bg-column: #ffffff;
     --text-main: #334155;
@@ -493,7 +497,7 @@ select.form-control option {
     flex-direction: column;
     flex-grow: 1;
     height: calc(100vh - 80px); /* 80px do header */
-    background: var(--bg-dark);
+    background: var(--bg-agenda);
 }
 
 .agenda-grid-header {
@@ -512,7 +516,7 @@ select.form-control option {
     flex-grow: 1;
     overflow: auto;
     padding: 1rem;
-    background: var(--bg-dark);
+    background: var(--bg-agenda);
 }
 
 .agenda-grid-layout {
@@ -528,7 +532,7 @@ select.form-control option {
 }
 
 .grid-col-header {
-    background: var(--bg-card);
+    background: var(--agenda-header-bg);
     padding: 1rem 0.5rem;
     text-align: center;
     font-weight: 600;
@@ -539,7 +543,7 @@ select.form-control option {
 }
 
 .time-col-header {
-    background: var(--bg-column);
+    background: var(--agenda-header-bg);
     color: var(--text-muted);
 }
 
@@ -555,7 +559,7 @@ select.form-control option {
     color: var(--text-muted);
     border-right: 1px solid var(--border-color);
     border-bottom: 1px solid var(--border-color);
-    background: var(--bg-column);
+    background: var(--agenda-header-bg);
     /* Vai ocupar a coluna 1 e a linha específica definida no HTML/JS */
 }
 
