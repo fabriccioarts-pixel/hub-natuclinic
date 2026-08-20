@@ -847,3 +847,309 @@ select.form-control option {
     color: var(--text-muted);
 }
 
+
+/* ============================================ */
+/* MODAIS CUSTOMIZADOS (ALERTS E CONFIRMS) E TOOLTIPS */
+/* ============================================ */
+
+/* Tooltip Customizado para a Agenda (Hover) */
+.agenda-block[data-tooltip] {
+    position: relative;
+}
+.agenda-block[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(23, 23, 23, 0.95);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 8px;
+    white-space: pre-wrap;
+    z-index: 999999;
+    font-size: 0.85rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.1);
+    pointer-events: none;
+    margin-bottom: 6px;
+    min-width: 200px;
+    text-align: center;
+}
+
+/* Overlay do Modal Customizado */
+.custom-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999999;
+    opacity: 0;
+    animation: fadeIn 0.2s forwards;
+}
+
+/* Caixa do Modal */
+.custom-modal-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    transform: scale(0.95);
+    animation: popIn 0.2s forwards;
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.custom-modal-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.custom-modal-message {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.custom-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+@keyframes fadeIn {
+    to { opacity: 1; }
+}
+
+@keyframes popIn {
+    to { transform: scale(1); }
+}
+
+
+/* ============================================ */
+/* FLATPICKR CUSTOMIZATION (CALEND�RIO) */
+/* ============================================ */
+
+
+
+/* ============================================ */
+/* FLATPICKR CUSTOMIZATION (CALENDÁRIO) */
+/* ============================================ */
+
+.flatpickr-calendar {
+    background: #111111 !important;
+    border: 1px solid #2a2a2a !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6) !important;
+    border-radius: 16px !important;
+    padding: 20px 15px !important;
+    font-family: inherit !important;
+    width: 320px !important;
+    transform: scale(0.95);
+    transform-origin: top center;
+}
+
+/* Remover setinhas da caixa do flatpickr */
+.flatpickr-calendar.arrowTop:before,
+.flatpickr-calendar.arrowTop:after,
+.flatpickr-calendar.arrowBottom:before,
+.flatpickr-calendar.arrowBottom:after {
+    display: none !important;
+}
+
+.flatpickr-months {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin-bottom: 20px !important;
+    padding: 0 10px !important;
+}
+
+.flatpickr-months .flatpickr-month {
+    background: transparent !important;
+    color: #fff !important;
+    height: auto !important;
+}
+
+.flatpickr-current-month {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 0 !important;
+    height: auto !important;
+    position: static !important;
+    width: auto !important;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months,
+.flatpickr-current-month input.cur-year {
+    background: #1a1a1a !important;
+    border: 1px solid #333 !important;
+    border-radius: 8px !important;
+    color: #fff !important;
+    font-size: 0.95rem !important;
+    font-weight: 500 !important;
+    padding: 6px 10px !important;
+    height: auto !important;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months:hover,
+.flatpickr-current-month input.cur-year:hover {
+    border-color: #555 !important;
+}
+
+.flatpickr-weekdays {
+    height: auto !important;
+    margin-bottom: 15px !important;
+    width: 100% !important;
+}
+.flatpickr-weekdaycontainer {
+    display: grid !important;
+    grid-template-columns: repeat(7, 1fr) !important;
+    justify-items: center !important;
+    width: 100% !important;
+}
+
+.flatpickr-weekdays .flatpickr-weekday {
+    color: #888 !important;
+    font-size: 0.75rem !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    background: transparent !important;
+    text-align: center !important;
+    width: 34px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.flatpickr-days, .flatpickr-rContainer, .flatpickr-innerContainer {
+    width: 100% !important;
+    display: block !important;
+}
+
+.dayContainer {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(7, 1fr) !important;
+    justify-items: center !important;
+    row-gap: 4px !important;
+}
+
+.flatpickr-day {
+    color: #eaeaea !important;
+    font-size: 0.95rem !important;
+    font-weight: 500 !important;
+    background: transparent !important;
+    border-color: transparent !important;
+    border-radius: 8px !important;
+    width: 34px !important;
+    max-width: 34px !important;
+    height: 34px !important;
+    line-height: 34px !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s ease !important;
+}
+
+.flatpickr-day:hover,
+.flatpickr-day:focus {
+    background: #1eb980 !important;
+    border-color: #1eb980 !important;
+    color: #fff !important;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange,
+.flatpickr-day.selected:focus,
+.flatpickr-day.selected:hover {
+    background: #1eb980 !important;
+    border-color: #1eb980 !important;
+    color: #fff !important;
+    box-shadow: 0 4px 12px rgba(30, 185, 128, 0.4) !important;
+}
+
+.flatpickr-day.today {
+    background: rgba(30, 185, 128, 0.15) !important;
+    color: #1eb980 !important;
+    font-weight: bold !important;
+    border: 1px solid rgba(30, 185, 128, 0.4) !important;
+    border-radius: 8px !important;
+}
+.flatpickr-day.today:hover {
+    background: #1eb980 !important;
+    color: #fff !important;
+}
+
+.flatpickr-day.flatpickr-disabled,
+.flatpickr-day.prevMonthDay,
+.flatpickr-day.nextMonthDay {
+    color: #555 !important;
+    opacity: 0.6 !important;
+}
+
+.flatpickr-time {
+    border-top: 1px solid #2a2a2a !important;
+    margin-top: 10px !important;
+}
+
+.flatpickr-time input, .flatpickr-time .flatpickr-am-pm {
+    color: #fff !important;
+}
+
+.flatpickr-time input:hover, .flatpickr-time .flatpickr-am-pm:hover {
+    background: #2a2a2a !important;
+}
+
+.flatpickr-innerContainer, .flatpickr-weekwrapper, .flatpickr-weekdaycontainer, .flatpickr-months {
+    background: transparent !important;
+}
+
+.flatpickr-prev-month, .flatpickr-next-month {
+    position: static !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: auto !important;
+    padding: 8px !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+}
+
+.flatpickr-prev-month:hover, .flatpickr-next-month:hover {
+    background: #1a1a1a !important;
+}
+
+.flatpickr-prev-month svg, .flatpickr-next-month svg {
+    fill: #888 !important;
+    width: 14px !important;
+    height: 14px !important;
+}
+.flatpickr-prev-month:hover svg, .flatpickr-next-month:hover svg {
+    fill: #fff !important;
+}

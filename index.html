@@ -14,7 +14,15 @@
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
     <link rel="stylesheet" href="style.css?v=3">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
 </head>
 
 <body>
@@ -607,7 +615,7 @@
                 <div style="position: relative;">
                     <button class="btn-secondary"
                         style="border: 1px solid var(--border-color); padding: 0.4rem 0.7rem; border-radius: 6px; background: transparent; color: var(--text-main);"
-                        onclick="document.getElementById('hidden-date-picker').showPicker()"><i
+                        onclick="document.getElementById('hidden-date-picker')._flatpickr.open()"><i
                             class="fa-regular fa-calendar-check"></i></button>
                     <input type="date" id="hidden-date-picker" onchange="jumpToDate(this.value)"
                         style="position: absolute; opacity: 0; width: 10px; height: 10px; bottom: 0; right: 0; pointer-events: none; border: none; padding: 0; z-index: -1;">
@@ -919,7 +927,7 @@
 
     <!-- Footer Versão -->
     <footer style="text-align: center; padding: 1rem; color: var(--text-muted); font-size: 0.8rem; border-top: 1px solid var(--border-color); background: var(--bg-card); margin-top: auto;">
-        Versão Atual: [Nova] - WhatsApp Chat Nativo e Banco D1 | Hub Natuclinic - Versão 1.1.0 (Atualizado: 19/08/2026)
+        Versão Atual: [Nova] - Design Premium Flatpickr e WhatsApp Token | Hub Natuclinic - Versão 1.1.0 (Atualizado: 20/08/2026)
     </footer>
 
     <!-- Scripts da Aplicação -->

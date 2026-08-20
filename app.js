@@ -112,6 +112,9 @@ async function fetchApiOptions() {
         if(response.ok) {
             apiOptions = await response.json();
             populateSelects();
+            if (typeof renderAgendaGrid === 'function') {
+                renderAgendaGrid();
+            }
         }
     } catch(e) {
         console.error("Erro ao buscar opções da API", e);
@@ -366,7 +369,7 @@ function closeModals() {
     document.getElementById('integrationActions').style.display = 'flex';
 }
 
-function saveNewLead() {
+async function saveNewLead() {
     const nome = document.getElementById('nl-nome').value;
     const telefone = document.getElementById('nl-telefone').value;
     const origem = document.getElementById('lead-origem').value;
@@ -377,7 +380,7 @@ function saveNewLead() {
     const fb_click_id = fbcEl ? fbcEl.value : '';
     
     if(!telefone) {
-        alert("O número de WhatsApp é obrigatório para cadastrar o paciente!");
+        await customAlert("O número de WhatsApp é obrigatório para cadastrar o paciente!");
         return;
     }
 
@@ -448,7 +451,7 @@ async function saveLeadNotes() {
 }
 
 async function deleteLead(id) {
-    if(confirm("Tem certeza que deseja deletar este paciente?")) {
+    if(await customConfirm("Tem certeza que deseja deletar este paciente?")) {
         try {
             const res = await fetch(`/api/leads/${id}`, { method: 'DELETE' });
             const json = await res.json();
@@ -456,11 +459,11 @@ async function deleteLead(id) {
                 leads = leads.filter(l => l.id !== id);
                 renderBoard();
             } else {
-                alert("Erro ao deletar: " + (json.error || "Desconhecido"));
+                await customAlert("Erro ao deletar: " + (json.error || "Desconhecido"));
             }
         } catch (e) {
             console.error("Erro ao deletar lead", e);
-            alert("Erro ao deletar o lead.");
+            await customAlert("Erro ao deletar o lead.");
         }
     }
 }
@@ -719,7 +722,7 @@ async function confirmAgendamento() {
     const procedureId = document.getElementById('ag-event').value;
     
     if(!dataAg || !horaAg || !placeId || !doctorId || !procedureId) {
-        alert("Preencha todos os campos do agendamento!");
+        await customAlert("Preencha todos os campos do agendamento!");
         return;
     }
     
@@ -746,7 +749,7 @@ async function confirmAgendamento() {
         const bornVal = (document.getElementById('ag-patient-born') || {}).value || '';
         if (bornVal) patientBorn = bornVal;
         if (!leadName) {
-            alert("Preencha o nome do paciente!");
+            await customAlert("Preencha o nome do paciente!");
             return;
         }
     }
@@ -799,7 +802,7 @@ async function confirmAgendamento() {
             throw new Error(result.error || "Erro desconhecido na API do Amigo App");
         }
         
-        alert("Agendamento criado com sucesso no Amigo App!");
+        await customAlert("Agendamento criado com sucesso no Amigo App!");
         
         if (draggedLead) {
             draggedLead.column = 'col-agendado';
@@ -818,7 +821,7 @@ async function confirmAgendamento() {
         window.currentEditingAttendance = null;
     } catch (error) {
         console.error("Erro ao agendar/atualizar:", error);
-        alert(error.message);
+        await customAlert(error.message);
     } finally {
         loader.classList.remove('active');
     }
@@ -1136,7 +1139,7 @@ async function createUser() {
     const password = document.getElementById('nu-pass').value.trim();
     const role = document.getElementById('nu-role').value;
     
-    if (!username || !password) return alert('Preencha usuário e senha!');
+    if (!username || !password) return await customAlert('Preencha usuário e senha!');
     
     try {
         const res = await fetch('/api/users', {
@@ -1152,19 +1155,19 @@ async function createUser() {
         document.getElementById('nu-pass').value = '';
         loadUsers();
     } catch (e) {
-        alert(e.message);
+        await customAlert(e.message);
     }
 }
 
 async function deleteUser(username) {
-    if (!confirm(`Tem certeza que deseja excluir o acesso de ${username}?`)) return;
+    if (!await customConfirm(`Tem certeza que deseja excluir o acesso de ${username}?`)) return;
     try {
         const res = await fetch(`/api/users/${username}`, { method: 'DELETE' });
         const data = await res.json();
         if (data.error) throw new Error(data.error);
         loadUsers();
     } catch (e) {
-        alert(e.message);
+        await customAlert(e.message);
     }
 }
 
@@ -1548,7 +1551,7 @@ async function renderAgendaGrid() {
                     const inlineStyle = `grid-column: ${col}; grid-row: ${rowStart} / ${rowEnd}; width: calc(${widthPct}% - 4px); margin-left: ${leftPct}%; z-index: ${zIndex}; box-shadow: 1px 2px 6px rgba(0,0,0,0.15); ${extraStyles}`;
                     
                     const html = `
-                        <div class="agenda-block" style="${inlineStyle}" title="${title} - ${subtitle}" onclick="openPatientDetailsModal('${att.id}', event)">
+                        <div class="agenda-block" style="${inlineStyle}" data-tooltip="${title} - ${subtitle}" onclick="openPatientDetailsModal('${att.id}', event)">
                             <strong>${statusIcon} ${timeText} | ${title}</strong>
                             ${subtitle}
                         </div>
@@ -1587,7 +1590,7 @@ async function renderAgendaGrid() {
         
     } catch (e) {
         console.error("Erro na Grade:", e);
-        alert("Erro ao buscar a agenda: " + e.message);
+        await customAlert("Erro ao buscar a agenda: " + e.message);
     } finally {
         if (loader) loader.style.display = 'none';
     }
@@ -1737,15 +1740,15 @@ async function uploadNovaPlanilha(event) {
         
         const data = await res.json();
         if (res.ok) {
-            alert("Planilha atualizada com sucesso!");
+            await customAlert("Planilha atualizada com sucesso!");
             aniversariantesMesFetched = false;
             fetchAniversariantesMes();
         } else {
-            alert("Erro ao salvar: " + (data.error || 'Desconhecido'));
+            await customAlert("Erro ao salvar: " + (data.error || 'Desconhecido'));
         }
     } catch (e) {
         console.error(e);
-        alert("Erro na comunicação com o servidor.");
+        await customAlert("Erro na comunicação com o servidor.");
     } finally {
         btnLabel.innerHTML = oldText;
         event.target.value = '';
@@ -1958,3 +1961,95 @@ function closeMktReportModal() {
         modal.classList.remove('active');
     }
 }
+
+// ============================================
+// MODAIS CUSTOMIZADOS (ALERTS E CONFIRMS)
+// ============================================
+
+window.customAlert = function(message, title = 'Aviso') {
+    return new Promise(resolve => {
+        const overlay = document.createElement('div');
+        overlay.className = 'custom-modal-overlay';
+        overlay.innerHTML = `
+            <div class="custom-modal-box">
+                <div class="custom-modal-title"><i class="fa-solid fa-circle-exclamation" style="color: var(--accent-warning);"></i> ${title}</div>
+                <div class="custom-modal-message">${message}</div>
+                <div class="custom-modal-actions">
+                    <button class="btn-primary" id="cm-ok-btn">OK</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        document.getElementById('cm-ok-btn').addEventListener('click', () => {
+            overlay.remove();
+            resolve();
+        });
+    });
+};
+
+window.customConfirm = function(message, title = 'Confirmação') {
+    return new Promise(resolve => {
+        const overlay = document.createElement('div');
+        overlay.className = 'custom-modal-overlay';
+        overlay.innerHTML = `
+            <div class="custom-modal-box">
+                <div class="custom-modal-title"><i class="fa-solid fa-circle-question" style="color: var(--accent-info);"></i> ${title}</div>
+                <div class="custom-modal-message">${message}</div>
+                <div class="custom-modal-actions">
+                    <button class="btn-secondary" id="cm-cancel-btn">Cancelar</button>
+                    <button class="btn-primary" id="cm-confirm-btn" style="background: var(--accent-danger); border-color: var(--accent-danger);">Confirmar</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        document.getElementById('cm-confirm-btn').addEventListener('click', () => {
+            overlay.remove();
+            resolve(true);
+        });
+        document.getElementById('cm-cancel-btn').addEventListener('click', () => {
+            overlay.remove();
+            resolve(false);
+        });
+    });
+};
+
+const initFlatpickr = () => {
+    if (typeof flatpickr !== "undefined") {
+        flatpickr("input[type=date]", {
+            locale: "pt",
+            dateFormat: "Y-m-d",
+            onChange: function(selectedDates, dateStr, instance) {
+                // Seta o valor visualmente / no DOM
+                instance.element.value = dateStr;
+                
+                // Puxa o onchange original (que deve ser jumpToDate(this.value))
+                const onChangeAttr = instance.element.getAttribute('onchange');
+                if (onChangeAttr) {
+                    // Substitui o this.value pela data em string
+                    const executableStr = onChangeAttr.replace(/this.value/g, "'" + dateStr + "'");
+                    try {
+                        eval(executableStr);
+                    } catch(e) {
+                        console.error('Error executing flatpickr onchange:', e);
+                    }
+                } else {
+                    instance.element.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            }
+        });
+    }
+};
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initFlatpickr);
+} else {
+    initFlatpickr();
+}
+window.addEventListener("DOMContentLoaded", () => {
+    if (typeof flatpickr !== "undefined") {
+        flatpickr("input[type=date]", {
+            locale: "pt",
+            dateFormat: "Y-m-d"
+        });
+    }
+});
+

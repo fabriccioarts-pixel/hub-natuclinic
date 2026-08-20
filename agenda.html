@@ -16,7 +16,15 @@
     <!-- Chart.js for Dashboard -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
+    
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
     <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
 </head>
 <body>
 
@@ -88,7 +96,7 @@
                 <button class="btn-secondary" style="border: 1px solid var(--border-color); padding: 0.4rem 0.7rem; border-radius: 6px; background: transparent; color: var(--text-color);" onclick="changeAgendaDate(1)"><i class="fa-solid fa-chevron-right"></i></button>
                 <button class="btn-secondary" style="border: 1px solid var(--border-color); padding: 0.4rem 1rem; border-radius: 6px; background: transparent; font-weight: 500; font-size: 0.9rem; color: var(--text-color);" onclick="resetAgendaDate()">Hoje</button>
                 <div style="position: relative;">
-                    <button class="btn-secondary" style="border: 1px solid var(--border-color); padding: 0.4rem 0.7rem; border-radius: 6px; background: transparent; color: var(--text-color);" onclick="document.getElementById('hidden-date-picker').showPicker()"><i class="fa-regular fa-calendar-check"></i></button>
+                    <button class="btn-secondary" style="border: 1px solid var(--border-color); padding: 0.4rem 0.7rem; border-radius: 6px; background: transparent; color: var(--text-color);" onclick="document.getElementById('hidden-date-picker')._flatpickr.open()"><i class="fa-regular fa-calendar-check"></i></button>
                     <input type="date" id="hidden-date-picker" onchange="jumpToDate(this.value)" style="position: absolute; opacity: 0; width: 10px; height: 10px; bottom: 0; right: 0; pointer-events: none; border: none; padding: 0; z-index: -1;">
                 </div>
                 <div class="agenda-loader" style="display: none; margin-left: 0.5rem;"><i class="fa-solid fa-circle-notch spin"></i></div>
@@ -125,6 +133,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
 </head>
 <body>
 
@@ -347,6 +358,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
 </head>
 <body>
 
@@ -825,7 +839,7 @@
                 <button class="btn-secondary" style="border: 1px solid var(--border-color); padding: 0.4rem 0.7rem; border-radius: 6px; background: transparent; color: var(--text-color);" onclick="changeAgendaDate(1)"><i class="fa-solid fa-chevron-right"></i></button>
                 <button class="btn-secondary" style="border: 1px solid var(--border-color); padding: 0.4rem 1rem; border-radius: 6px; background: transparent; font-weight: 500; font-size: 0.9rem; color: var(--text-color);" onclick="resetAgendaDate()">Hoje</button>
                 <div style="position: relative;">
-                    <button class="btn-secondary" style="border: 1px solid var(--border-color); padding: 0.4rem 0.7rem; border-radius: 6px; background: transparent; color: var(--text-color);" onclick="document.getElementById('hidden-date-picker').showPicker()"><i class="fa-regular fa-calendar-check"></i></button>
+                    <button class="btn-secondary" style="border: 1px solid var(--border-color); padding: 0.4rem 0.7rem; border-radius: 6px; background: transparent; color: var(--text-color);" onclick="document.getElementById('hidden-date-picker')._flatpickr.open()"><i class="fa-regular fa-calendar-check"></i></button>
                     <input type="date" id="hidden-date-picker" onchange="jumpToDate(this.value)" style="position: absolute; opacity: 0; width: 10px; height: 10px; bottom: 0; right: 0; pointer-events: none; border: none; padding: 0; z-index: -1;">
                 </div>
                 <div class="agenda-loader" style="display: none; margin-left: 0.5rem;"><i class="fa-solid fa-circle-notch spin"></i></div>
